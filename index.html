@@ -1143,14 +1143,17 @@ function populateArticle(art, item){
 
   // 모드1(큐레이션) 카드는 category(예: 문화라이프)+press(언론사)+absTime(절대시간)을 갖고,
   // 모드2(실시간) 카드는 source(기사 원문 도메인)+time(상대시간)만 갖는다 — 있는 것만 채운다.
+  // pill-outline(태그 스타일 칩)은 카테고리 전용 자리 — 언론사/출처는 절대 칩으로 넣지 않고
+  // meta-sub(평문)로만 보여준다. 안 그러면 언론사명이 마치 2번째 추천 태그처럼 보여버림.
   const metaRow = q(".art-meta-row");
   metaRow.textContent = "";
   // 히어로 카드류는 tags(배열, 카드엔 2개 노출)를 쓴다 — 상세에선 원본 마크업(성수동)과 동일하게 1순위 태그만.
   metaRow.appendChild(mkSpan("pill-dark", item.tag || (item.tags && item.tags[0]) || "실시간"));
-  if (item.category || item.source) metaRow.appendChild(mkSpan("pill-outline", item.category || item.source));
-  if (item.press) {
+  if (item.category) metaRow.appendChild(mkSpan("pill-outline", item.category));
+  const pressText = item.press || item.source;
+  if (pressText) {
     metaRow.appendChild(mkSpan("sep", "ㅣ"));
-    metaRow.appendChild(mkSpan("meta-sub", item.press));
+    metaRow.appendChild(mkSpan("meta-sub", pressText));
   }
   metaRow.appendChild(mkSpan("sep", "ㅣ"));
   metaRow.appendChild(mkSpan("meta-sub", item.absTime || item.time || ""));
