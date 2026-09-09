@@ -1,0 +1,1400 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PICTER v2</title>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    /* ============ design-system.md 1. Neutral ============ */
+    --color-neutral-50:  #fafafa;
+    --color-neutral-100: #f5f5f5;
+    --color-neutral-200: #e5e5e5;
+    --color-neutral-300: #d4d4d4;
+    --color-neutral-400: #a3a3a3;
+    --color-neutral-500: #737373;
+    --color-neutral-700: #404040;
+    --color-neutral-800: #262626;
+    --color-neutral-900: #171717;
+    --color-white: #ffffff;
+    --color-bg-home: #151312;
+    --color-gray-800: #323334; /* 기사 본문 전용 (Neutral 스케일과 별도, design-system.md §1-1) */
+    --color-stone-900: #1c1917; /* 1분요약 그라디언트, design-system.md §1-1 */
+
+    /* ============ 2. Tone ============ */
+    --color-pink-50: #fdf2f8;   --color-pink-600: #db2777;
+    --color-yellow-100:#fef9c3; --color-yellow-500:#eab308; --color-yellow-600:#ca8a04;
+    --color-sky-50:  #f0f9ff;   --color-sky-600:  #0284c7;
+
+    /* ============ 3. Typography ============ */
+    --font-headline: 'Yde Street', 'Pretendard', sans-serif;
+    --font-body: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+    --fs-h1: 28px;    --lh-h1: 1.6;
+    --fs-h2: 20px;    --lh-h2: 1.4;
+    --fs-body-lg: 16px; --lh-body-lg: 1.6;
+    --fs-body: 14px;  --lh-body: 1.6;
+    --fs-sm: 15px;    --lh-sm: 1.6;
+    --fs-xs: 13px;    --lh-xs: 1.4;
+    --fs-mini: 12px;  --lh-mini: 16px;
+    --fs-xxs: 11px;   --lh-xxs: 14px;
+    --fs-micro: 10px;
+
+    /* ============ 4. Radius ============ */
+    --radius-pill: 40px;
+    --radius-xl: 40px;
+    --radius-lg: 24px;
+    --radius-md: 20px;
+    --radius-sm: 16px;
+
+    /* ============ 5. Spacing scale ============ */
+    --sp-1: 4px; --sp-2: 6px; --sp-3: 8px; --sp-4: 12px; --sp-5: 16px;
+    --sp-6: 20px; --sp-7: 24px; --sp-8: 28px; --sp-9: 36px; --sp-10: 40px;
+
+    /* ============ 6. Effect ============ */
+    --shadow-card: 0px 4px 10px rgba(0,0,0,0.1);
+    --shadow-gnb: 0px -10px 10px rgba(0,0,0,0.1);
+    --blur-summary-bg: rgba(255,255,255,.7);
+    --blur-summary: blur(15px);
+  }
+  body {
+    font-family: var(--font-body);
+    background: #000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  .app-frame {
+    position: relative;
+    width: 375px;
+    height: 812px;
+  }
+  .app {
+    width: 100%;
+    height: 100%;
+    background: var(--color-bg-home);
+    position: relative;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+  .headline {
+    font-family: var(--font-headline);
+    font-weight: 800;
+    letter-spacing: -0.3px;
+  }
+  img.ph { display:block; width:100%; height:100%; object-fit:cover; }
+  .no-scrollbar::-webkit-scrollbar{ display:none; }
+  .no-scrollbar{ scrollbar-width:none; -ms-overflow-style:none; }
+
+  /* ============ HOME SCREEN ============ */
+  #screen-home { display:block; }
+  .home-header {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:var(--sp-2) var(--sp-5); height:36px;
+  }
+  .logo-mark { display:flex; align-items:center; gap:var(--sp-2); }
+  .logo-mark img.logo-svg { height:15px; width:auto; display:block; }
+  .home-icons { display:flex; gap:var(--sp-4); align-items:center; }
+  .home-icons img { width:22px; height:22px; display:block; }
+
+  .cat-row { display:flex; gap:var(--sp-3); padding:var(--sp-3) var(--sp-5); overflow-x:auto; }
+  .cat-chip {
+    display:flex; align-items:center; gap:var(--sp-1); border-radius:var(--radius-pill);
+    padding:2px var(--sp-3) 2px 2px; flex-shrink:0; white-space:nowrap;
+    background:var(--color-white);
+  }
+  .cat-chip .dot { width:28px; height:28px; border-radius:50%; display:block; flex-shrink:0; }
+  .cat-chip span { font-size:var(--fs-mini); color:var(--color-neutral-800); font-weight:500; }
+
+  /* ---- Hero carousel ---- */
+  .hero-wrap { padding: 24px 0 var(--sp-3); }
+  .hero-scroll {
+    display:flex; align-items:flex-end; gap:12px; overflow-x:auto; padding:0 32px;
+    scroll-snap-type:x mandatory;
+  }
+  .hero-card {
+    scroll-snap-align:center; flex-shrink:0; width:294px; height:400px; border-radius:var(--radius-xl);
+    position:relative; overflow:hidden; box-shadow:var(--shadow-card); cursor:pointer;
+    transition:height .25s ease;
+  }
+  .hero-card.active { height:420px; }
+  .hero-card .bg { position:absolute; inset:0; }
+  .hero-card .grad {
+    position:absolute; left:0; right:0; bottom:0; height:216px; z-index:2;
+    background:linear-gradient(to bottom, rgba(38,38,38,0) 10%, var(--color-neutral-800) 100%);
+    display:flex; flex-direction:column; align-items:center; justify-content:flex-end;
+    padding:0 var(--sp-5) var(--sp-8); gap:var(--sp-4); text-align:center;
+  }
+  .hero-card .grad .t { font-size:19px; line-height:1.45; color:var(--color-white); }
+  .hero-tags { display:flex; gap:var(--sp-3); align-items:center; flex-wrap:wrap; justify-content:center; }
+  .tag-pill {
+    background:var(--color-neutral-700); color:var(--color-neutral-300); font-size:var(--fs-mini); border-radius:var(--radius-pill);
+    padding:4px var(--sp-3); white-space:nowrap;
+  }
+  .time-txt { font-size:var(--fs-xxs); color:var(--color-neutral-400); white-space:nowrap; }
+
+  .pagenation { display:flex; justify-content:center; align-items:center; gap:5px; padding:var(--sp-3) 0 var(--sp-1); }
+  .pagenation .dot { width:6px; height:6px; border-radius:8px; background:var(--color-neutral-700); transition:width .2s ease, background .2s ease; }
+  .pagenation .dot.on { width:18px; background:var(--color-white); }
+
+  /* ---- Chapters ---- */
+  .chapter { padding-top:100px; }
+  .chapter-title { padding:var(--sp-5); }
+  .chapter-title .row { display:flex; align-items:center; gap:var(--sp-1); }
+  .chapter-title .row .picman { width:18px; height:18px; display:block; flex-shrink:0; }
+  .chapter-title h2 { font-size:var(--fs-h1); color:var(--color-white); }
+  .chapter-title p { font-size:var(--fs-body); color:var(--color-neutral-400); margin-top:2px; }
+
+  .stack-cards { display:flex; flex-direction:column; gap:var(--sp-5); padding:0 var(--sp-5); margin-top:20px; }
+  .h-cards { display:flex; gap:var(--sp-5); overflow-x:auto; padding:0 var(--sp-5); margin-top:20px; }
+
+  .news-card {
+    background:var(--color-neutral-800); border-radius:var(--radius-xl); overflow:hidden; padding-bottom:24px;
+    flex-shrink:0; cursor:pointer;
+  }
+  .news-card .thumb { width:100%; aspect-ratio:19/10; border-radius:var(--radius-xl); overflow:hidden; } /* 원래 비율로 원복 — 기획서 §4-1의 1:1 지정이 실제 디자인과 안 맞음 */
+  .news-card .title { padding:14px var(--sp-5) var(--sp-6); color:var(--color-white); font-size:var(--fs-body-lg); line-height:1.5; }
+  .news-card .meta { display:flex; align-items:center; gap:var(--sp-3); padding:0 var(--sp-5); flex-wrap:wrap; }
+  .stack-cards .news-card { width:100%; }
+  .h-cards .news-card { width:300px; }
+
+  /* Theme columns */
+  .theme-scroll { display:flex; gap:var(--sp-6); overflow-x:auto; padding:0 var(--sp-5) 4px; margin-top:20px; }
+  .theme-col { flex-shrink:0; width:300px; background:var(--color-neutral-800); border-radius:var(--radius-xl); overflow:hidden; }
+  .theme-head { padding:36px 24px var(--sp-4); }
+  .theme-head .row { display:flex; align-items:flex-start; gap:var(--sp-1); }
+  .theme-head h3 { font-size:20px; color:var(--color-white); line-height:1.4; flex:1; }
+  .theme-head .chev { color:var(--color-neutral-400); font-size:18px; }
+  .theme-head p { font-size:var(--fs-body); color:var(--color-neutral-400); margin-top:4px; line-height:1.5; }
+  .theme-kw { display:flex; gap:var(--sp-2); padding:var(--sp-2) 24px 28px; flex-wrap:wrap; }
+  .theme-kw span { background:var(--color-bg-home); color:var(--color-neutral-50); font-size:var(--fs-mini); padding:var(--sp-3) 11px; border-radius:var(--radius-pill); }
+
+  .theme-hero { position:relative; height:180px; margin:0 0 24px; cursor:pointer; border-radius:var(--radius-xl); overflow:hidden; }
+  .theme-hero .bg { position:absolute; inset:0; }
+  .theme-hero .grad {
+    position:absolute; inset:0; z-index:2; background:linear-gradient(to bottom, rgba(23,23,23,0), var(--color-neutral-900) 78%);
+    display:flex; flex-direction:column; justify-content:flex-end; padding:0 var(--sp-5) var(--sp-5); gap:var(--sp-3);
+  }
+  .theme-hero .meta { display:flex; gap:var(--sp-3); align-items:center; }
+  .theme-hero .t { font-size:var(--fs-body-lg); color:var(--color-white); line-height:1.4; }
+
+  .theme-sub { display:flex; gap:10px; padding:0 var(--sp-5) var(--sp-5); cursor:pointer; }
+  .theme-sub .thumb { width:100px; aspect-ratio:19/10; border-radius:var(--radius-md); overflow:hidden; flex-shrink:0; }
+  .theme-sub .txt { display:flex; flex-direction:column; justify-content:center; gap:var(--sp-3); }
+  .theme-sub .t { font-size:var(--fs-xs); color:var(--color-white); line-height:1.4; }
+  .theme-sub .meta { display:flex; gap:var(--sp-2); align-items:center; }
+  .theme-hero .tag-pill, .theme-sub .tag-pill { font-size:var(--fs-micro); padding:3px 7px; }
+  .theme-hero .time-txt, .theme-sub .time-txt { font-size:var(--fs-micro); }
+
+  /* Bottom GNB */
+  .bottom-gnb {
+    display:flex; justify-content:center; gap:var(--sp-5); background:var(--color-neutral-900); padding:6px 0 10px;
+    box-shadow:var(--shadow-gnb);
+    position:sticky; bottom:0; z-index:10;
+  }
+  .gnb-item { width:94px; display:flex; flex-direction:column; align-items:center; gap:var(--sp-1); padding:10px 4px; }
+  .gnb-item span { font-size:var(--fs-micro); color:var(--color-neutral-700); }
+  .gnb-item.on span { color:var(--color-neutral-100); }
+  .gnb-item .ic { width:22px; height:22px; }
+  .gnb-item.on .ic { stroke:var(--color-neutral-100); }
+  .gnb-item .ic { stroke:var(--color-neutral-700); }
+
+  /* ============ ARTICLE SCREEN ============ */
+  #screen-article { display:none; background:var(--color-neutral-50); min-height:100vh; }
+  .art-hero { position:sticky; top:0; height:355px; z-index:0; } /* 카드를 내린 만큼 여기(사진)를 늘려서 채움 — margin으로 밀면 그 자리가 빈 여백이 됨 */
+  .art-hero .bg { position:absolute; inset:0; }
+  .art-topbar { position:sticky; top:0; height:0; z-index:20; }
+  .back-btn {
+    position:absolute; top:14px; left:14px; width:28px; height:28px; border-radius:50%;
+    background:rgba(0,0,0,.35); display:flex; align-items:center; justify-content:center; cursor:pointer;
+  }
+  .back-btn svg { width:16px; height:16px; stroke:var(--color-white); }
+
+  .art-card-wrap { background:var(--color-white); margin-top:-24px; border-radius:var(--radius-md) var(--radius-md) 0 0; position:relative; z-index:2; padding-bottom:var(--sp-4);}
+  .art-title-block { padding:var(--sp-9) var(--sp-7) 0; }
+  .art-title-block h1 { font-size:var(--fs-h2); line-height:1.5; color:var(--color-neutral-800); }
+  .art-meta-row { display:flex; align-items:center; gap:var(--sp-1); flex-wrap:wrap; margin-top:var(--sp-5); }
+  .pill-dark { background:var(--color-neutral-900); color:var(--color-neutral-50); font-size:var(--fs-mini); border-radius:var(--radius-pill); padding:4px var(--sp-3); }
+  .pill-outline { border:1px solid var(--color-neutral-400); color:var(--color-neutral-500); font-size:var(--fs-mini); border-radius:var(--radius-pill); padding:4px var(--sp-3); }
+  .sep { color:var(--color-neutral-300); font-size:var(--fs-mini); }
+  .meta-sub { font-size:var(--fs-mini); color:var(--color-neutral-400); font-weight:500; }
+
+  .summary-box {
+    margin:var(--sp-6) auto 0; width:343px; border:2px solid var(--color-neutral-100); border-radius:var(--radius-xl); padding:32px var(--sp-6);
+    background:var(--blur-summary-bg); backdrop-filter:var(--blur-summary);
+  }
+  .summary-box .lbl { display:flex; align-items:center; gap:var(--sp-1); margin-bottom:var(--sp-4); }
+  .summary-box .lbl .picman { width:24px; height:24px; display:block; flex-shrink:0; }
+  .summary-box .lbl b {
+    font-weight:800; font-size:var(--fs-body);
+    background:linear-gradient(to left, var(--color-stone-900), var(--color-yellow-500) 46%); -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  .summary-box p { font-size:var(--fs-body-lg); line-height:1.6; color:var(--color-neutral-800); font-weight:500; }
+  .expand-arrow { display:flex; justify-content:center; margin:10px 0 var(--sp-3); color:var(--color-neutral-300); }
+
+  .art-body {
+    padding:140px var(--sp-5) 40px; display:flex; flex-direction:column; gap:var(--sp-9); align-items:center; background:var(--color-white);
+    position:relative; z-index:2; /* .art-hero(position:sticky)는 포지셔닝된 요소라 z-index:0이어도 포지셔닝 안 된 요소보다 항상 위에 그려짐(DOM 순서 무관) → .art-body도 포지셔닝해서 같은 층에서 경쟁시켜야 스크롤 시 히어로가 뒤로 비쳐 보이는 버그가 안 생김 */
+  }
+  .art-body p { font-size:var(--fs-body-lg); line-height:1.6; color:var(--color-gray-800); width:343px; white-space:pre-wrap; }
+  .art-byline { width:343px; padding-top:var(--sp-6); }
+  .art-byline .name { font-size:var(--fs-sm); font-weight:600; color:var(--color-neutral-800); }
+  .art-byline .mail { font-size:var(--fs-xs); color:var(--color-neutral-500); margin-top:2px; }
+  .art-inline-img { width:343px; height:228px; border-radius:var(--radius-xl); overflow:hidden; }
+  .art-origin-link {
+    display:block; width:343px; text-align:center; padding:16px; border-radius:var(--radius-pill);
+    background:var(--color-neutral-900); color:var(--color-white); font-size:var(--fs-body-lg); font-weight:700;
+    text-decoration:none;
+  }
+  .art-body .art-limit-note { width:343px; font-size:var(--fs-xxs); line-height:1.5; color:var(--color-neutral-400); text-align:center; }
+
+  .art-actions {
+    display:flex; align-items:center; padding:28px var(--sp-6); border-top:1px solid var(--color-neutral-200); background:var(--color-white);
+    position:sticky; bottom:0; z-index:5;
+  } /* 반투명(blur)이라 sticky 히어로가 계속 비쳐 보여서 완전 불투명으로 변경 */
+  .art-actions .grow { flex:1; }
+  .art-actions svg { width:24px; height:24px; margin-right:var(--sp-5); cursor:pointer; }
+  .art-actions svg:last-child { margin-right:0; }
+  .art-actions svg.ic-fill { fill:var(--color-neutral-900); }
+  .art-actions svg.ic-stroke { fill:none; stroke:var(--color-neutral-900); stroke-width:1.5; }
+
+  .section-white { background:var(--color-white); padding:56px 0; position:relative; z-index:2; } /* .art-body와 동일 이유: position:sticky인 .art-hero보다 위에 그려지도록 포지셔닝 */
+  .sec-title { padding:var(--sp-5); }
+  .sec-title h3 { font-family:var(--font-headline); font-weight:800; font-size:var(--fs-h2); color:var(--color-neutral-900); line-height:1.3; }
+  .sec-title p { font-size:var(--fs-body); color:var(--color-neutral-500); margin-top:4px; }
+
+  .issue-row {
+    display:flex; flex-direction:column; gap:var(--sp-3); padding:24px var(--sp-5); border-bottom:1px solid var(--color-neutral-100); cursor:pointer;
+  }
+  .tone-row { display:flex; gap:var(--sp-2); align-items:center; flex-wrap:wrap; }
+  .tone-chip { display:block; height:24px; width:auto; flex-shrink:0; }
+  .kw-chip { font-size:var(--fs-mini); padding:4px var(--sp-4); border-radius:var(--radius-pill); }
+  .kw-chip.pink { background:var(--color-pink-50); color:var(--color-pink-600); }
+  .kw-chip.yellow { background:var(--color-yellow-100); color:var(--color-yellow-600); }
+  .kw-chip.sky { background:var(--color-sky-50); color:var(--color-sky-600); }
+
+  .issue-content { display:flex; gap:var(--sp-4); align-items:flex-start; }
+  .issue-text { flex:1; display:flex; flex-direction:column; justify-content:space-between; height:68px; }
+  .issue-text .t { font-size:var(--fs-sm); color:var(--color-gray-800); line-height:1.5; }
+  .issue-thumb { width:68px; height:68px; border-radius:var(--radius-lg); overflow:hidden; flex-shrink:0; }
+
+  .related-row { display:flex; gap:var(--sp-2); padding:var(--sp-4) var(--sp-5); align-items:flex-start; cursor:pointer; }
+  .related-thumb { width:116px; height:76px; border-radius:var(--radius-lg); overflow:hidden; flex-shrink:0; }
+  .related-text { flex:1; display:flex; flex-direction:column; justify-content:flex-end; gap:var(--sp-4); min-width:0; }
+  .related-text .t { font-size:var(--fs-xs); color:var(--color-neutral-800); line-height:1.4; }
+  .related-meta { display:flex; align-items:center; gap:var(--sp-3); }
+  .related-meta .pill-outline { font-size:9px; padding:3px 7px; }
+  .related-meta .meta-sub { font-size:var(--fs-xxs); }
+
+  /* helper gradient thumbnails — Figma 토큰 아님, 실제 이미지 도입 전 임시 대체 (design-system.md §8 참고) */
+  .g-econ { background:linear-gradient(135deg,#1fae6a,#0d5c37); }
+  .g-life { background:linear-gradient(135deg,#ff7a59,#c2410c); }
+  .g-ai { background:linear-gradient(135deg,#6f6ff2,#4338ca); }
+  .g-mix1{ background:linear-gradient(135deg,var(--color-yellow-500),#b45309); }
+  .g-mix2{ background:linear-gradient(135deg,var(--color-sky-600),#075985); }
+  .g-mix3{ background:linear-gradient(135deg,var(--color-pink-600),#831843); }
+  .bg, .thumb, .art-inline-img, .issue-thumb, .related-thumb { position:relative; }
+  .bg img, .thumb img, .art-inline-img img, .issue-thumb img, .related-thumb img {
+    width:100%; height:100%; object-fit:cover; display:block; position:relative; z-index:1;
+  }
+
+  /* ============ FAB (mode switch) ============ */
+  .fab {
+    position:absolute; right:16px; bottom:96px; width:48px; height:48px; border-radius:50%;
+    background:var(--color-neutral-900); color:var(--color-white); display:flex; align-items:center; justify-content:center;
+    font-family:var(--font-headline); font-weight:800; font-size:16px; cursor:pointer; z-index:100;
+    box-shadow:0 6px 16px rgba(0,0,0,.4); border:2px solid rgba(255,255,255,.15); transition:background .2s ease;
+  }
+  .fab.live { background:var(--color-yellow-600); }
+
+  /* ============ ONBOARDING ============ */
+  #screen-onboarding { display:none; background:var(--color-bg-home); min-height:100%; }
+  .ob-inner { padding:72px var(--sp-6) var(--sp-6); display:flex; flex-direction:column; min-height:812px; }
+  .ob-title { font-family:var(--font-headline); font-weight:800; font-size:var(--fs-h1); color:var(--color-white); }
+  .ob-sub { font-size:var(--fs-body); color:var(--color-neutral-400); margin-top:var(--sp-2); }
+  .ob-chips { display:flex; flex-wrap:wrap; gap:var(--sp-3); margin-top:36px; }
+  .ob-chip {
+    padding:10px 18px; border-radius:var(--radius-pill); border:1.5px solid var(--color-neutral-700);
+    color:var(--color-neutral-300); font-size:var(--fs-sm); font-weight:500; cursor:pointer; transition:all .15s ease;
+  }
+  .ob-chip.on { background:var(--color-yellow-500); border-color:var(--color-yellow-500); color:var(--color-neutral-900); font-weight:700; }
+  .ob-start {
+    margin-top:auto; width:100%; padding:16px; border:none; border-radius:var(--radius-pill);
+    background:var(--color-neutral-700); color:var(--color-neutral-400); font-size:var(--fs-body-lg); font-weight:700;
+    font-family:var(--font-body); cursor:not-allowed; transition:all .15s ease;
+  }
+  .ob-start.ready { background:var(--color-yellow-500); color:var(--color-neutral-900); cursor:pointer; }
+
+  /* ============ REALTIME MODE ============ */
+  .live-badge {
+    display:inline-flex; align-items:center; gap:4px; background:var(--color-yellow-500); color:var(--color-neutral-900);
+    font-size:var(--fs-mini); font-weight:700; padding:3px 10px; border-radius:var(--radius-pill); margin-left:var(--sp-3);
+  }
+  .live-loading { padding:var(--sp-9) var(--sp-5); text-align:center; color:var(--color-neutral-400); font-size:var(--fs-body); }
+</style>
+</head>
+<body>
+<div class="app-frame">
+<div class="app" id="app">
+
+  <!-- =========================== HOME =========================== -->
+  <div id="screen-home">
+    <div class="home-header">
+      <div class="logo-mark"><img class="logo-svg" src="asset/Logo_3D.svg" alt="PICKTER"></div>
+      <div class="home-icons">
+        <img src="asset/C_Icon-1.svg" alt="알림">
+        <img src="asset/C_Icon.svg" alt="검색">
+      </div>
+    </div>
+
+    <div class="cat-row no-scrollbar">
+      <div class="cat-chip"><img class="dot" src="asset/맞춤.svg" alt="맞춤"><span>맞춤</span></div>
+      <div class="cat-chip"><img class="dot" src="asset/정치.svg" alt="정치"><span>정치</span></div>
+      <div class="cat-chip"><img class="dot" src="asset/경제.svg" alt="경제"><span>경제</span></div>
+      <div class="cat-chip"><img class="dot" src="asset/사회.svg" alt="사회"><span>사회</span></div>
+      <div class="cat-chip"><img class="dot" src="asset/IT과학.svg" alt="IT과학"><span>IT·과학</span></div>
+      <div class="cat-chip"><img class="dot" src="asset/문화라이프.svg" alt="문화라이프"><span>문화·라이프</span></div>
+      <div class="cat-chip"><img class="dot" src="asset/세계.svg" alt="세계"><span>세계</span></div>
+      <div class="cat-chip"><img class="dot" src="asset/스포츠.svg" alt="스포츠"><span>스포츠</span></div>
+      <div class="cat-chip"><img class="dot" src="asset/방송연예.svg" alt="방송연예"><span>방송·연예</span></div>
+      <div class="cat-chip"><img class="dot" src="asset/오피니언.svg" alt="오피니언"><span>오피니언</span></div>
+    </div>
+
+    <div class="hero-wrap">
+      <div class="hero-scroll no-scrollbar" id="heroScroll">
+        <!-- hero cards injected by JS -->
+      </div>
+      <div class="pagenation" id="heroPage"></div>
+    </div>
+
+    <div class="chapter">
+      <div class="chapter-title">
+        <div class="row"><h2 class="headline">오늘의 Pick</h2><img class="picman" src="asset/icon_pickman.svg" alt=""></div>
+        <p>픽터가 고른 놓치면 안 될 이슈</p>
+      </div>
+      <div class="stack-cards" id="todayPick"></div>
+    </div>
+
+    <div class="chapter">
+      <div class="chapter-title">
+        <div class="row"><h2 class="headline">지금 인기 핫 Pick</h2></div>
+        <p>인기 급상승 뉴스만 모았어요</p>
+      </div>
+      <div class="h-cards no-scrollbar" id="hotPick"></div>
+    </div>
+
+    <div class="chapter" style="padding-bottom:56px;">
+      <div class="chapter-title">
+        <div class="row"><h2 class="headline">테마 Pick</h2></div>
+        <p>당신의 관심사로 만든 이야기를 만나보세요</p>
+      </div>
+      <div class="theme-scroll no-scrollbar" id="themePick"></div>
+    </div>
+
+    <div class="bottom-gnb">
+      <div class="gnb-item on">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M4 11l8-7 8 7v9a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1z"/></svg>
+        <span>홈</span>
+      </div>
+      <div class="gnb-item">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6"/></svg>
+        <span>숏 뉴스</span>
+      </div>
+      <div class="gnb-item">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>
+        <span>내 정보</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================== ARTICLE DETAIL =========================== -->
+  <div id="screen-article">
+    <div class="art-topbar">
+      <div class="back-btn" onclick="goHome()">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg>
+      </div>
+    </div>
+    <div class="art-hero">
+      <div class="bg g-life" style="position:absolute; inset:0;"><img class="ph" src="asset/picture/스크린샷 2023-10-05 오후 3.32 2-2.png" alt=""></div>
+    </div>
+
+    <div class="art-card-wrap">
+      <div class="art-title-block">
+        <h1 class="headline">성수동 팝업 임대료, 하루 2000만원인데도 브랜드 줄섰다</h1>
+        <div class="art-meta-row">
+          <span class="pill-dark">관심:라이프</span>
+          <span class="pill-outline">문화라이프</span>
+          <span class="sep">ㅣ</span>
+          <span class="meta-sub">연합뉴스</span>
+          <span class="sep">ㅣ</span>
+          <span class="meta-sub">2026.10.11 오전 4:35</span>
+        </div>
+      </div>
+
+      <div class="summary-box">
+        <div class="lbl"><img class="picman" src="asset/Pickman_3d.svg" alt=""><b>1분 요약</b></div>
+        <p>성수동은 높은 팝업스토어 임대료에도 브랜드와 방문객이 몰리며, 단순 상권을 넘어 체험형 콘텐츠 중심의 대표 상업지로 자리 잡고 있다.</p>
+      </div>
+      <div class="expand-arrow">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+      </div>
+    </div>
+
+    <div class="art-body">
+      <p>5월 하순 평일 오후 찾은 서울 성수동 일대는 축제장 분위기에 가까웠다. 성수역 3번 출구를 나오자마자 팝업스토어를 찾아 뛰어가는 젊은 층과 거리 곳곳에서 사진을 찍는 외국인 관광객들이 눈에 들어왔다. 골목마다 팝업스토어 입간판이 세워져 있었고 건물 외벽에는 브랜드 광고물이 빼곡했다.
+
+특히 눈길을 끈 건 방문객들의 손이다. 거리 곳곳을 오가는 사람들 대부분이 쇼핑백과 풍선, 브랜드 굿즈를 들고 있었다. 한 팝업스토어를 방문한 뒤 곧바로 다음 장소로 이동하는 모습도 쉽게 볼 수 있었다.
+
+골목 안쪽 분위기도 다르지 않았다. 팝업스토어 위치를 검색하거나 "다음 팝업 어디 갈까"하는 말 소리가 이어졌다. 일부 공실 건물은 새로운 팝업스토어 입점을 위해 공사가 한창 진행중이었다.</p>
+      <div class="art-inline-img g-mix1"><img class="ph" src="https://picsum.photos/seed/seongsu-street/686/456" alt=""></div>
+      <p>인기 브랜드 매장마다 긴 대기줄도 이어졌다. 무신사 뷰티 앞에는 10명 넘는 방문객이 줄을 서 있었고 유명 떡 브랜드 '한정선' 앞에는 약 20명 가까운 대기 인파가 몰렸다. '자연도 소금빵' 매장 앞에도 10명 안팎이 대기했다.
+
+실제 유동인구도 증가세다. 서울시상권분석서비스에 따르면 성수역 일대 하루 평균 유동인구는 지난해 1분기 4만2671명에서 4분기 4만7246명으로 10.7% 늘었다. 같은 기간 성동구 전체 유동인구는 4만3328명에서 4만3330명으로 거의 비슷한 수준이고 서울시 전체 유동인구는 3만8045명에서 3만7509명으로 오히려 감소했다. 성수 상권으로 인파가 집중되는 흐름이 수치로도 확인된 셈이다.</p>
+      <div class="art-byline">
+        <div class="name">김민준 기자</div>
+        <div class="mail">minjun.kim@yna.co.kr</div>
+      </div>
+    </div>
+
+    <div class="art-actions">
+      <svg class="ic-fill" viewBox="0 0 24 24"><path d="M12 2C17.5229 2 22.0008 6.47713 22.001 12C22.001 17.523 17.523 22.001 12 22.001C6.47713 22.0008 2 17.5229 2 12C2.00016 6.47722 6.47722 2.00016 12 2ZM12 3.5C7.30565 3.50016 3.50016 7.30565 3.5 12C3.5 16.6945 7.30555 20.5008 12 20.501C16.6946 20.501 20.501 16.6946 20.501 12C20.5008 7.30555 16.6945 3.5 12 3.5ZM14.7178 13.999C15.0167 13.7123 15.4916 13.7226 15.7783 14.0215C16.0651 14.3204 16.0558 14.7953 15.7568 15.082C14.803 15.9969 13.5172 16.4101 12 16.4102C10.4828 16.4102 9.19698 15.9968 8.24316 15.082C7.94434 14.7954 7.93426 14.3204 8.2207 14.0215C8.50741 13.7226 8.98232 13.7124 9.28125 13.999C9.8838 14.577 10.7569 14.9102 12 14.9102C13.2429 14.9101 14.1153 14.5769 14.7178 13.999ZM8.22461 8.6875C8.73543 8.6875 9.14933 9.1015 9.14941 9.6123V10.5371C9.14941 11.048 8.73549 11.4629 8.22461 11.4629C7.71383 11.4628 7.2998 11.0479 7.2998 10.5371V9.6123C7.29989 9.10158 7.71389 8.68762 8.22461 8.6875ZM15.7754 8.6875C16.2861 8.68764 16.7001 9.10159 16.7002 9.6123V10.5371C16.7002 11.0479 16.2861 11.4627 15.7754 11.4629C15.2645 11.4629 14.8506 11.048 14.8506 10.5371V9.6123C14.8507 9.1015 15.2646 8.6875 15.7754 8.6875Z"/></svg>
+      <svg class="ic-fill" viewBox="0 0 24 24"><path d="M18.4619 3C19.135 3.0001 19.7809 3.2672 20.2568 3.74316C20.7328 4.21913 20.9999 4.86498 21 5.53809V14.7695C20.9999 15.4426 20.7328 16.0885 20.2568 16.5645C19.7809 17.0404 19.135 17.3075 18.4619 17.3076H7.6709L4.18164 20.7969C3.98372 20.9948 3.68636 21.0543 3.42773 20.9473C3.16904 20.8401 3 20.5876 3 20.3076V5.53809C3.0001 4.86498 3.2672 4.21913 3.74316 3.74316C4.21913 3.2672 4.86498 3.0001 5.53809 3H18.4619ZM5.53809 4.38477C5.2322 4.38487 4.93896 4.50636 4.72266 4.72266C4.50636 4.93896 4.38486 5.2322 4.38477 5.53809V18.6367L6.89551 16.126C7.02533 15.9962 7.20122 15.9229 7.38477 15.9229H18.4619C18.7678 15.9228 19.061 15.8013 19.2773 15.585C19.4936 15.3686 19.6152 15.0754 19.6152 14.7695V5.53809C19.6151 5.2322 19.4936 4.93896 19.2773 4.72266C19.061 4.50636 18.7678 4.38487 18.4619 4.38477H5.53809ZM15.5 11.5C15.9142 11.5 16.25 11.8358 16.25 12.25C16.25 12.6642 15.9142 13 15.5 13H8.5C8.08579 13 7.75 12.6642 7.75 12.25C7.75 11.8358 8.08579 11.5 8.5 11.5H15.5ZM15.5 7.5C15.9142 7.5 16.25 7.83579 16.25 8.25C16.25 8.66421 15.9142 9 15.5 9H8.5C8.08579 9 7.75 8.66421 7.75 8.25C7.75 7.83579 8.08579 7.5 8.5 7.5H15.5Z"/></svg>
+      <div class="grow"></div>
+      <svg class="ic-stroke" viewBox="0 0 24 24"><path d="M6.43555 3.4718H17.5781C18.8208 3.4718 19.8281 4.47916 19.8281 5.7218V19.2003C19.8279 20.1293 18.8505 20.7337 18.0195 20.3185L13.0137 17.8146C12.3803 17.4979 11.6343 17.498 11.001 17.8146L5.99414 20.3185C5.16321 20.7335 4.18576 20.1292 4.18555 19.2003V5.7218C4.18555 4.47916 5.19291 3.4718 6.43555 3.4718Z"/></svg>
+    </div>
+
+    <div style="height:40px; background:var(--color-neutral-50); position:relative; z-index:2;"></div>
+
+    <div class="section-white" id="sec-tones">
+      <div class="sec-title">
+        <h3>같은 이슈,<br>다양한 시각으로 보기</h3>
+        <p>한쪽 시선에 갇히지 않도록 다른 관점도 함께 살펴보세요</p>
+      </div>
+
+      <div id="tonesList">
+      <div class="issue-row" onclick="restartArticle('성수동 임대료 폭등에 원주민 상인 잇단 폐업, 젠트리피케이션 심화')">
+        <div class="tone-row">
+          <img class="tone-chip" src="asset/State 1=우려, Type 1=제목.svg" alt="우려시각">
+          <span class="kw-chip pink">#젠트리피케이션</span>
+          <span class="kw-chip pink">#원주민이탈</span>
+          <span class="kw-chip pink">#임대료</span>
+        </div>
+        <div class="issue-content">
+          <div class="issue-text">
+            <div class="t">성수동 임대료 폭등에 원주민 상인 잇단 폐업, 젠트리피케이션 심화</div>
+            <span class="meta-sub">2026.10.11 오전 4:35</span>
+          </div>
+          <div class="issue-thumb g-mix3"><img class="ph" src="https://picsum.photos/seed/gentrification/136/136" alt=""></div>
+        </div>
+      </div>
+
+      <div class="issue-row" onclick="restartArticle('성동구, 팝업스토어 운영 가이드라인 발표...안전·소음 기준 마련')">
+        <div class="tone-row">
+          <img class="tone-chip" src="asset/State 1=사실, Type 1=제목.svg" alt="사실전달">
+          <span class="kw-chip yellow">#가이드라인</span>
+          <span class="kw-chip yellow">#소음규제</span>
+          <span class="kw-chip yellow">#성동구</span>
+        </div>
+        <div class="issue-content">
+          <div class="issue-text">
+            <div class="t">성동구, 팝업스토어 운영 가이드라인 발표...안전·소음 기준 마련</div>
+            <span class="meta-sub">2026.10.11 오전 4:35</span>
+          </div>
+          <div class="issue-thumb g-mix1"><img class="ph" src="https://picsum.photos/seed/guideline-doc/136/136" alt=""></div>
+        </div>
+      </div>
+
+      <div class="issue-row" onclick="restartArticle('성수동 팝업 성공에 서울 다른 상권도 벤치마킹 열풍')">
+        <div class="tone-row">
+          <img class="tone-chip" src="asset/State 1=긍정, Type 1=제목.svg" alt="긍정시각">
+          <span class="kw-chip sky">#벤치마킹</span>
+          <span class="kw-chip sky">#상권확산</span>
+          <span class="kw-chip sky">#신흥상권</span>
+        </div>
+        <div class="issue-content">
+          <div class="issue-text">
+            <div class="t">성수동 팝업 성공에 서울 다른 상권도 벤치마킹 열풍</div>
+            <span class="meta-sub">2026.10.11 오전 4:35</span>
+          </div>
+          <div class="issue-thumb g-mix2"><img class="ph" src="https://picsum.photos/seed/benchmark-city/136/136" alt=""></div>
+        </div>
+      </div>
+      </div>
+    </div>
+
+    <div id="spacer-tones-related" style="height:40px; background:var(--color-neutral-50); position:relative; z-index:2;"></div>
+
+    <div class="section-white" id="sec-related" style="padding-bottom:60px;">
+      <div class="sec-title">
+        <h3>당신이 관심 가질 만한<br>다른 이슈</h3>
+        <p>당신의 관심사에서 한 걸음 더 이어지는 이야기</p>
+      </div>
+      <div id="relatedList">
+      <div class="related-row">
+        <div class="related-thumb g-econ"><img class="ph" src="https://picsum.photos/seed/myeongdong/232/152" alt=""></div>
+        <div class="related-text">
+          <div class="t">명동 상권 부활 조짐, 외국인 관광객 회복에 공실률 급감</div>
+          <div class="related-meta"><span class="pill-outline">관심:경제</span><span class="meta-sub">2026.10.11 오전 4:35</span></div>
+        </div>
+      </div>
+      <div class="related-row">
+        <div class="related-thumb g-ai"><img class="ph" src="https://picsum.photos/seed/office-startup/232/152" alt=""></div>
+        <div class="related-text">
+          <div class="t">성수동 새 오피스 밀집지구로 재편, IT 스타트업 잇단 이전</div>
+          <div class="related-meta"><span class="pill-outline">관심:성수</span><span class="meta-sub">2026.10.11 오전 4:35</span></div>
+        </div>
+      </div>
+      <div class="related-row">
+        <div class="related-thumb g-mix1"><img class="ph" src="https://picsum.photos/seed/experience-spend/232/152" alt=""></div>
+        <div class="related-text">
+          <div class="t">MZ세대 '경험 소비' 확산, 상품보다 공간에 지갑 연다</div>
+          <div class="related-meta"><span class="pill-outline">자주 읽는</span><span class="meta-sub">2026.10.11 오전 4:35</span></div>
+        </div>
+      </div>
+      <div class="related-row">
+        <div class="related-thumb g-mix2"><img class="ph" src="https://picsum.photos/seed/local-city2/232/152" alt=""></div>
+        <div class="related-text">
+          <div class="t">지방 도시들, '제2의 성수동' 벤치마킹 상권 조성 나서</div>
+          <div class="related-meta"><span class="pill-outline">관련기사</span><span class="meta-sub">2026.10.11 오전 4:35</span></div>
+        </div>
+      </div>
+      </div>
+    </div>
+    <div style="height:40px; background:var(--color-neutral-50); position:relative; z-index:2;"></div>
+  </div>
+
+  <!-- =========================== ONBOARDING (real-time interests) =========================== -->
+  <div id="screen-onboarding">
+    <div class="ob-inner">
+      <div class="ob-title">관심사를 선택해주세요</div>
+      <div class="ob-sub">선택한 관심사로 실시간 뉴스를 모아드려요</div>
+      <div class="ob-chips" id="obChips"></div>
+      <button class="ob-start" id="obStart" onclick="startRealtime()" disabled>시작하기</button>
+    </div>
+  </div>
+
+</div>
+
+<div class="fab" id="fab" onclick="toggleMode()">
+  <span id="fabLabel">1</span>
+</div>
+</div>
+
+<script>
+/* ---------------- 실제 뉴스 데이터 (하드코딩, 검색으로 확보) ---------------- */
+const HERO = [
+  { t:"2030은 조각투자, 자산가는 하이엔드 부동산... 투자 양극화", tags:["새로운 발견","오늘의 이슈"], time:"30분 전", g:"g-mix1", seed:"invest-gap", img:"asset/picture/스크린샷 2023-10-05 오후 3.32 2-1.png",
+    category:"경제", press:"한국경제", absTime:"2026.08.20 오전 9:12",
+    desc:"집값 진입장벽이 높아지자 2030세대는 조각투자로, 고소득 자산가는 하이엔드 부동산으로 몰리며 자산시장 양극화가 뚜렷해지고 있다.",
+    body:[
+      "부동산 조각투자 시장이 빠르게 커지고 있다. 국내 부동산 조각투자 상품은 지난해 말 기준 29개, 누적 발행액은 약 936억원 규모로 집계됐다. 오피스텔이나 상업용 빌딩처럼 목돈이 필요한 자산을 지분 형태로 쪼개 파는 방식이라, 수천~수만원 단위의 소액으로도 투자에 참여할 수 있다는 점이 2030세대를 끌어들이고 있다.",
+      "반대편에서는 고소득 1인 가구를 중심으로 한 하이엔드 부동산 소비가 늘고 있다. 전용면적은 줄이더라도 입지와 시설 수준은 타협하지 않는 소비 패턴이 뚜렷해지면서, 전문가들은 이 흐름이 일시적 유행이 아니라 인구구조 변화가 만든 구조적 현상으로 굳어질 가능성이 크다고 본다."
+    ],
+    byline:{ name:"이수민", mail:"sumin.lee@hankyung.com" }
+  },
+  { t:"성수동 팝업 임대료, 하루 2000만원인데도 브랜드 줄섰다", tags:["관심:라이프","자주 읽는"], time:"1시간 전", g:"g-life", seed:"seongsu-rent", img:"asset/picture/스크린샷 2023-10-05 오후 3.32 2-2.png",
+    category:"문화라이프", press:"연합뉴스", absTime:"2026.10.11 오전 4:35", richDetail:true
+  },
+  { t:"청년미래적금 출시 첫날, 신청 20만명 몰렸다", tags:["새로운 발견","오늘의 이슈"], time:"30분 전", g:"g-econ", seed:"savings-launch", img:"asset/picture/스크린샷 2023-10-05 오후 3.32 2.png",
+    category:"경제", press:"한국일보", absTime:"2026.06.22 오후 3:40", kw:["청년미래적금","정부매칭","자유적립식"],
+    desc:"만 19~34세 대상 청년미래적금이 출시 첫날 19만6000명의 신청자를 모으며 이전 청년도약계좌보다 약 2.5배 많은 관심을 받았다.",
+    body:[
+      "정부가 지난 6월 22일 내놓은 청년 전용 적금 상품 '청년미래적금'이 출시 첫날부터 19만6000명의 신청자를 모았다. 이는 앞서 나온 유사 상품인 청년도약계좌의 첫날 신청자(7만7000명)보다 약 2.5배 많은 수치다.",
+      "이 상품은 매월 최대 50만원까지 자유롭게 납입할 수 있는 3년 만기 자유적립식으로, 납입액의 6~12%를 정부가 매칭 지원하고 이자소득세도 면제된다. 신청 기간(6월 22일~7월 3일) 안에 몰린 수요가 예상을 뛰어넘자, 정부는 기준을 충족하는 신청자는 추가 예산을 편성해서라도 모두 받아주겠다는 방침을 밝혔다."
+    ],
+    byline:{ name:"박지훈", mail:"jihoon.park@hankookilbo.com" }
+  },
+  { t:"통번역가, AI 대체 위험 가장 높은 직업 1위", tags:["새로운 발견","오늘의 이슈"], time:"30분 전", g:"g-ai", seed:"translator-ai", img:"asset/picture/스크린샷 2023-10-05 오후 3.32 2-3.png",
+    category:"IT과학", press:"이데일리", absTime:"2026.05.26 오전 11:05",
+    desc:"하버드경영대학원이 900여개 직업의 자동화 점수를 분석한 결과, 통·번역가가 AI 대체 위험 1위로 나타났다.",
+    body:[
+      "하버드 경영대학원(HBS) 연구진이 약 900여 개 직업, 1만9000여 개 직무를 분석해 '자동화 점수'를 산출한 결과 통·번역가가 0.8점으로 최상위권의 대체 위험을 보였다. 점수는 1점에 가까울수록 AI가 해당 업무를 대체할 가능성이 높다는 의미다.",
+      "기자(0.54점)도 상대적으로 높은 대체 위험군에 속했지만 통·번역가에는 못 미쳤다. 반면 건설·생산·운송처럼 현장 기술이 필요한 직업군은 대부분 0점에 가까워, 몸을 쓰는 일보다 언어를 다루는 일이 오히려 AI에 더 취약하다는 역설적 결과가 나왔다."
+    ],
+    byline:{ name:"정하윤", mail:"hayoon.jung@edaily.co.kr" }
+  },
+  { t:"신입은 줄고 경력만 뽑는다... AI가 바꾼 채용 지형", tags:["새로운 발견","오늘의 이슈"], time:"30분 전", g:"g-mix2", seed:"hiring-shift", img:"asset/picture/스크린샷 2023-10-05 오후 3.32 2-4.png",
+    category:"IT과학", press:"서울경제", absTime:"2026.07.10 오후 2:20", kw:["채용지형변화","경력직선호","AI대체"],
+    desc:"대기업 신입 공고가 1년 새 43% 급감하고 경력직 선호 비중이 87%까지 오르며 AI가 채용시장 구조 자체를 바꾸고 있다.",
+    body:[
+      "대기업 정규직 신입 공고가 지난해 1~11월 기준 전년 대비 43% 급감했다. 맞춤형 취업 서비스 가입자 중 경력직이 차지하는 비중은 지난 3월 49%에서 최근 87%까지 치솟으며 매달 오름세를 이어가고 있다.",
+      "신입·저연차 직원이 주로 맡던 단순 반복 업무를 AI가 대신하면서, 기업들은 상위 직무를 곧바로 수행할 소수의 핵심 인재 채용에 무게를 두고 있다. 채용 방식도 정기 공채 대신 수시채용(54.8%)과 직무 경험 중심 평가(67.6%)로 빠르게 재편되는 중이다."
+    ],
+    byline:{ name:"최도현", mail:"dohyun.choi@sedaily.com" }
+  },
+];
+
+const TODAY_PICK = [
+  { t:"'한우·한돈·그림' 세뱃돈 투자해볼까...2030 겨냥 조각투자 봇물", tag:"관심:재테크", time:"20시간 전", g:"g-econ", seed:"fraction-invest",
+    category:"경제", press:"뉴데일리", absTime:"2026.02.03 오전 8:45",
+    desc:"한우, 한돈, 미술품까지 조각투자 대상 자산이 다양해지며 목돈이 없는 2030세대를 겨냥한 상품이 잇따라 출시되고 있다.",
+    body:[
+      "부동산 중심이던 조각투자 시장이 한우, 한돈, 미술품 같은 실물 자산으로까지 빠르게 넓어지고 있다. 수천 원 단위로도 투자에 참여할 수 있다는 접근성 덕분에 목돈 마련이 부담스러운 2030세대의 유입이 두드러진다.",
+      "다만 전문가들은 아직 시장 초기 단계라 환금성이 낮고 관련 제도도 정비 중인 만큼, '재미 삼아' 소액으로 접근하되 자산 대부분을 싣는 방식은 피해야 한다고 조언한다."
+    ],
+    byline:{ name:"강서연", mail:"seoyeon.kang@newdaily.co.kr" }
+  },
+  { t:"가뜩이나 신입 안 뽑는데 AI까지…사라지는 청년층 '경력 사다리'", tag:"관심:AI", time:"1일 전", g:"g-ai", seed:"career-ladder",
+    category:"IT과학", press:"이데일리", absTime:"2026.07.11 오후 5:15",
+    desc:"신입 채용이 급감한 데다 AI가 초급 업무까지 대체하면서, 청년층이 실무 경험을 쌓아 올라가던 '경력 사다리'가 끊기고 있다.",
+    body:[
+      "예전에는 신입으로 입사해 단순 업무부터 배우며 경력을 쌓는 게 당연한 경로였다. 그러나 AI가 그 단순 업무 상당수를 흡수하면서, 기업들이 처음부터 경력직만 찾는 경우가 늘고 있다.",
+      "청년층 입장에서는 첫 발을 뗄 자리 자체가 줄어드는 셈이다. 전문가들은 이런 흐름이 단기 채용 한파를 넘어, 다음 세대 핵심 인재를 길러낼 통로 자체가 좁아지는 구조적 문제로 이어질 수 있다고 경고한다."
+    ],
+    byline:{ name:"정하윤", mail:"hayoon.jung@edaily.co.kr" }
+  },
+  { t:"5월 성수동 팝업, 피카츄 30주년부터 스트레이키즈까지", tag:"관심:성수", time:"2일 전", g:"g-life", seed:"seongsu-may",
+    category:"문화라이프", press:"라이프리포트", absTime:"2026.05.15 오후 1:30",
+    desc:"포켓몬 30주년 기념 팝업과 스트레이키즈 팝업이 한 블록 안에서 동시에 열리며 5월 성수동이 축제 분위기로 북적였다.",
+    body:[
+      "5월 한 달간 성수동 트렌드팟 바이 올리브영N 성수에서는 포켓몬 30주년을 기념하는 생일파티 콘셉트 팝업스토어가 문을 열었다. 초창기 피카츄의 통통한 실루엣을 복각한 한정판 봉제인형 등 기념 굿즈가 눈길을 끌었다.",
+      "한 블록 떨어진 곳에서는 공항을 콘셉트로 한 스트레이키즈 팝업이 함께 열려, 피카츄 굿즈를 든 사람들과 여권 모양 기념품을 손에 쥔 팬들이 같은 거리를 오갔다. 서로 다른 팬덤이 한 동네에서 공존하는 진풍경이 연출됐다."
+    ],
+    byline:{ name:"오세인", mail:"sein.oh@lifereport.co.kr" }
+  },
+];
+
+const HOT_PICK = [
+  { t:"CES 2026 최대 화두는 '피지컬 AI'... 젠슨 황도 강조", tag:"관심:AI", time:"3시간 전", g:"g-mix3", seed:"ces2026", img:"asset/picture/Picture-9.png",
+    category:"IT과학", press:"전자신문", absTime:"2026.01.07 오전 10:00",
+    desc:"젠슨 황 엔비디아 CEO가 '피지컬 AI의 챗GPT 모먼트가 왔다'고 선언하며, CES 2026을 로봇과 자율주행 AI 열기로 채웠다.",
+    body:[
+      "젠슨 황 엔비디아 CEO는 CES 2026 기조연설에서 \"피지컬 AI의 챗GPT 모먼트가 왔다\"고 말했다. 화면 속에서 글을 쓰고 이미지를 만들던 AI가 이제 공장과 물류센터, 거리로 걸어 나오는 단계에 접어들었다는 의미다.",
+      "그는 자율주행차를 위한 추론형 AI 모델 '알파마요'를 공개하며 \"카메라 입력부터 실제 조작까지 엔드투엔드로 학습된 세계 최초의 사고하는 자율주행 AI\"라고 소개했다. 보스턴다이내믹스가 양산형 휴머노이드 '아틀라스'의 출하 계획을 밝히는 등, 행사장은 로봇 이야기로 가득했다."
+    ],
+    byline:{ name:"한지원", mail:"jiwon.han@etnews.com" }
+  },
+  { t:"성수동에 '공공 팝업스토어' 등장, 시세보다 저렴하게", tag:"관심:성수", time:"30분 전", g:"g-mix1", seed:"public-popup", img:"asset/picture/Picture-10.png",
+    category:"문화라이프", press:"헤럴드경제", absTime:"2026.06.19 오후 4:00",
+    desc:"하루 임대료가 100만원을 넘나드는 성수동에, 성동구가 시세보다 저렴한 '공공 팝업스토어'를 열어 소상공인의 진입 장벽을 낮췄다.",
+    body:[
+      "성수동 팝업스토어 하루 임대료가 100만원대까지 치솟으면서, 자본력이 부족한 브랜드는 명함도 못 내미는 상황이 이어지고 있다. 성동구는 이런 부담을 덜어주기 위해 시세보다 낮은 가격의 '공공 팝업스토어'를 마련했다.",
+      "이번 사업은 지역 기업·임대인·임차인·주민이 함께 상권을 관리하는 '타운매니지먼트' 모델의 일환으로 추진됐다. 정원오 성동구청장을 비롯해 루트임팩트, SM엔터테인먼트, 무신사 등 성수동에 자리 잡은 50여 개 기업과 주민 200여 명이 자리를 함께했다."
+    ],
+    byline:{ name:"서지민", mail:"jimin.seo@heraldcorp.com" }
+  },
+  { t:"2026 재테크트렌드페어, 20대부터 60대까지 몰렸다", tag:"관심:재테크", time:"30분 전", g:"g-ai", seed:"fintrend-fair", img:"asset/picture/Picture-11.png",
+    category:"경제", press:"매일경제", absTime:"2026.06.26 오후 1:20",
+    desc:"3회째를 맞은 재테크트렌드페어에 20대부터 60대까지 약 2만명이 몰리며 전 세대의 재테크 관심을 확인했다.",
+    body:[
+      "서울 강남구 SETEC에서 이틀간 열린 '2026 재테크트렌드페어'에 대학생부터 70대 이상까지 다양한 연령대의 방문객이 몰렸다. 2024년 처음 시작해 올해로 3회째를 맞은 이 행사는 매년 약 2만명이 찾는 재테크 축제로 자리 잡았다.",
+      "주식 투자 전략을 다룬 '머니랩' 세션은 강연마다 400석이 가득 찰 만큼 인기를 끌었고, KB·신한·하나·우리·NH농협 등 주요 금융사도 부스를 차렸다. 주식, 부동산, 암호화폐를 아우르는 27개 강연이 이어지며 세대를 가리지 않는 재테크 열기를 보여줬다."
+    ],
+    byline:{ name:"배현우", mail:"hyunwoo.bae@mk.co.kr" }
+  },
+];
+
+const THEMES = [
+  {
+    title:"취업이 막막해서, 투자를 시작했다",
+    sub:"채용 시장이 왜 얼어붙었고, 2030은 어디로 돈을 옮기고 있는지 알려주는 뉴스",
+    kw:["채용시장","재테크","2030"],
+    hero:{ t:"\"이러다 평생 집 못 사요\"...올인한 2030 계좌 봤더니 '대박'", tag:"관심:재테크", time:"30분 전", g:"g-mix1", seed:"theme1-hero", img:"asset/picture/Picture.png",
+      category:"경제", press:"한국경제", absTime:"2026.06.28 오전 9:30",
+      desc:"집값 진입장벽에 좌절한 2030세대가 조각투자와 재테크 학습에 뛰어들며, 일부는 예상 밖의 수익을 거두고 있다.",
+      body:[
+        "\"이러다 평생 집 못 사요.\" 2030세대 사이에서 이런 위기감이 재테크 열풍으로 이어지고 있다. 청약과 내 집 마련이 사실상 요원해지자, 소액으로도 시작할 수 있는 조각투자와 주식·펀드로 자산을 불리려는 시도가 늘었다.",
+        "실제로 일찍부터 투자를 시작한 일부 2030 투자자의 계좌는 시장 상승기를 타고 눈에 띄는 수익을 냈다. 전문가들은 성공 사례만 보고 무리하게 뛰어들기보다, 자신의 소득과 위험 감내 수준에 맞는 투자 규모를 먼저 정하라고 조언한다."
+      ],
+      byline:{ name:"조은비", mail:"eunbi.jo@hankyung.com" }
+    },
+    subs:[
+      { t:"적금 깨는 2030, \"투자 아니면 생존이 안 된다\"", tag:"새로운 발견", time:"30분 전", g:"g-econ", seed:"theme1-sub1", img:"asset/picture/Picture-1.png",
+        category:"경제", press:"뉴데일리", absTime:"2026.06.20 오전 10:10",
+        desc:"저금리 시대의 적금으로는 자산을 불릴 수 없다고 판단한 2030세대가 만기 전 적금을 깨고 투자로 옮겨가고 있다.",
+        body:[
+          "\"적금만 붓다가는 평생 제자리걸음일 것 같았다.\" 만기를 채우지 못하고 적금을 해지하는 2030세대가 늘고 있다. 물가 상승 속도를 따라가지 못하는 이자율로는 자산을 불리기는커녕 지키기도 벅차다는 판단에서다.",
+          "이렇게 확보한 목돈은 주식, 조각투자, 소액 부동산 상품 등으로 흘러가고 있다. 한 20대 투자자는 \"투자는 선택이 아니라 생존의 문제가 됐다\"고 말했다."
+        ],
+        byline:{ name:"강서연", mail:"seoyeon.kang@newdaily.co.kr" }
+      },
+      { t:"요즘 2030 세대가 돈 공부에 관심 가지는 이유", tag:"자주 읽는", time:"30분 전", g:"g-mix2", seed:"theme1-sub2", img:"asset/picture/Picture-2.png",
+        category:"경제", press:"매일경제", absTime:"2026.06.27 오후 6:00",
+        desc:"재테크 행사와 콘텐츠에 2030세대가 몰리며, 이들이 돈 공부에 나서는 배경에 관심이 쏠린다.",
+        body:[
+          "재테크트렌드페어 같은 금융 행사에 2030세대 참석 비중이 눈에 띄게 늘고 있다. 사회초년생 때부터 투자에 익숙해지지 않으면 뒤처진다는 불안감이 이들을 강연장과 온라인 재테크 커뮤니티로 이끌고 있다.",
+          "전문가들은 이런 흐름을 단순한 유행이 아니라, 저성장·고령화 시대에 스스로 자산을 지켜야 한다는 세대적 위기감의 표현으로 본다. \"부모 세대와 같은 방식으로는 살아남기 어렵다는 걸 이들은 이미 알고 있다\"는 것이다."
+        ],
+        byline:{ name:"배현우", mail:"hyunwoo.bae@mk.co.kr" }
+      },
+    ]
+  },
+  {
+    title:"내가 가는 그 매장, 사람이 사라진다",
+    sub:"로봇이 매장을 어떻게 바꾸고, 내 동네 가게는 어떻게 달라지는지 알려주는 뉴스",
+    kw:["자동화","성수","로봇"],
+    hero:{ t:"커피 로봇부터 로봇 빌딩까지, 로봇 전문 기업 엑스와이지", tag:"관심:성수", time:"30분 전", g:"g-ai", seed:"theme2-hero", img:"asset/picture/Picture-3.png",
+      category:"IT과학", press:"벤처스퀘어", absTime:"2026.04.02 오전 11:40",
+      desc:"서비스 로봇 스타트업 엑스와이지가 성수동에 무인 로봇 카페를 열고, 건물 전체를 로봇으로 운영하는 '로봇 빌딩' 실험까지 나섰다.",
+      body:[
+        "서비스 로봇 스타트업 엑스와이지는 성수동 낙낙생각공장에 무인 로봇 카페 '엑스익스프레스'를 열었다. 바리스타 로봇이 주문부터 결제, 제조, 픽업까지 처리해 사람 없이도 24시간 운영이 가능하다.",
+        "회사는 여기서 한발 더 나아가 '로봇 친화형 빌딩'을 구상 중이다. 음료 제조 로봇 '바리스타 브루'를 중심으로 배송·청소·안내·순찰 로봇 등 총 10대가 하나의 시스템으로 연결돼 건물 전체를 운영하는 실험이 성수동에서 진행되고 있다."
+      ],
+      byline:{ name:"오다인", mail:"dain.oh@venturesquare.net" }
+    },
+    subs:[
+      { t:"딥핑소스, 피지컬 AI로 리테일 자동화 확대…세븐일레븐 1000개 매장", tag:"새로운 발견", time:"30분 전", g:"g-mix2", seed:"theme2-sub1", img:"asset/picture/Picture-4.png",
+        category:"IT과학", press:"ZDNet Korea", absTime:"2026.07.24 오전 9:00",
+        desc:"딥핑소스가 정부 지원사업에 선정돼 CCTV와 로봇을 결합한 매장 자동화 시스템을 세븐일레븐 등 1000개 매장까지 확대한다.",
+        body:[
+          "비전 AI 기업 딥핑소스가 산업통상자원부의 'AI 응용제품 신속 상용화 지원사업' 주관기관으로 선정됐다. 사업명은 'AI 로보틱스 기반 유통매장 지능형 관리 플랫폼'으로, 총사업비는 45억원 규모다.",
+          "1단계에서는 세븐일레븐 등 리테일 매장과 마트 4곳에 로봇 3대를 투입해 결품 탐지, 재고 관리, 고객 응대, 안전관리를 자동화하는 체계를 검증한다. 2단계에서는 적용 매장을 1000곳까지 늘려 운영 데이터를 확보할 계획이다."
+        ],
+        byline:{ name:"임하늘", mail:"haneul.lim@zdnet.co.kr" }
+      },
+      { t:"로봇 자동화, 공장 넘어 매장으로…'리테일 휴머노이드'", tag:"자주 읽는", time:"30분 전", g:"g-econ", seed:"theme2-sub2", img:"asset/picture/Picture-5.png",
+        category:"IT과학", press:"한국경제", absTime:"2026.06.02 오전 8:30",
+        desc:"공장에 머물던 휴머노이드 로봇이 매장 진열대 정리와 물류 업무까지 맡으며 서비스업으로 활동 영역을 넓히고 있다.",
+        body:[
+          "최근 스마트팩토리·자동화 전시회에서는 매장 진열대에서 물건을 집어 고객에게 전달하는 휴머노이드 로봇 솔루션이 잇따라 공개됐다. 그동안 공장 안에 머물던 로봇이 매장과 물류센터, 공항으로 활동 무대를 넓히는 모습이다.",
+          "실제로 메르세데스-벤츠는 독일과 헝가리 공장에서 부품 운반과 품질 검사를 돕는 휴머노이드 로봇 '아폴로'를 시범 투입했다. 전문가들은 이런 흐름이 제조업을 넘어 서비스업 전반으로 빠르게 번질 것으로 내다본다."
+        ],
+        byline:{ name:"이수민", mail:"sumin.lee@hankyung.com" }
+      },
+    ]
+  },
+  {
+    title:"미술관 해설, 이제 AI가 한다",
+    sub:"AI가 전시를 어떻게 바꾸고, 작품 보는 방식은 어떻게 달라지는지 알려주는 뉴스",
+    kw:["AI","전시","도슨트"],
+    hero:{ t:"경기도미술관, 인공지능 기반 'AI 미술 도슨트' 7월 16일 도입", tag:"관심:전시", time:"30분 전", g:"g-mix3", seed:"theme3-hero", img:"asset/picture/Picture-6.png",
+      category:"문화라이프", press:"내외일보", absTime:"2026.07.16 오전 10:00", kw:["AI도슨트","경기도미술관","전시해설"],
+      desc:"경기도미술관이 7월 16일부터 관람객이 원하는 시점에 QR코드로 해설을 듣는 'AI 미술 도슨트' 서비스를 도입했다.",
+      body:[
+        "경기문화재단 경기도미술관이 7월 16일부터 인공지능 기술을 접목한 'AI 미술 도슨트' 서비스를 본격 운영한다. 정해진 시간에 맞춰 움직여야 했던 기존 가이드 방식과 달리, 관람객이 원하는 시점에 자율적으로 해설을 이용할 수 있도록 설계됐다.",
+        "관람객은 미술관 내 QR코드나 키오스크로 간편하게 접속해 실시간으로 맞춤형 작품 해설을 들을 수 있다. 이 서비스는 이날 개막한 하반기 기획전 《우리의 여름에게》(7월 16일~9월 27일)와 이어지는 《사랑노동아시아하기》(10월 29일~내년 2월 14일)에 우선 적용된다."
+      ],
+      byline:{ name:"문소율", mail:"soyul.moon@naewoeilbo.com" }
+    },
+    subs:[
+      { t:"AI 도슨트가 해설, 3D로 작품 감상…'아트테크' 시장 커진다", tag:"새로운 발견", time:"30분 전", g:"g-life", seed:"theme3-sub1", img:"asset/picture/Picture-7.png",
+        category:"문화라이프", press:"문화일보", absTime:"2026.07.18 오후 2:40",
+        desc:"미술관들이 AI 해설과 3D 감상 기술을 잇따라 도입하면서, 기술과 예술을 결합한 '아트테크' 시장이 커지고 있다.",
+        body:[
+          "경기도미술관의 AI 도슨트 도입을 시작으로, 국내 미술관들이 인공지능 해설과 3D 작품 감상 기술을 잇따라 실험하고 있다. 정해진 해설사의 동선을 따라가야 했던 관람 방식이, 관람객이 원하는 작품 앞에서 원하는 만큼 머무는 방식으로 바뀌는 중이다.",
+          "업계는 이런 흐름을 기술과 예술이 결합한 '아트테크' 시장의 성장으로 본다. 다만 일각에서는 해설의 편의성이 커진 만큼, 작품을 스스로 해석하는 감상 경험이 옅어질 수 있다는 우려도 함께 나온다."
+        ],
+        byline:{ name:"남가은", mail:"gaeun.nam@munhwa.com" }
+      },
+      { t:"AI와 예술의 공존…달리 미술관의 교육적 아트 경험", tag:"자주 읽는", time:"1일 전", g:"g-mix1", seed:"theme3-sub2", img:"asset/picture/Picture-8.png",
+        category:"문화라이프", press:"아트인사이트", absTime:"2026.07.20 오전 11:15",
+        desc:"AI를 활용한 미술 교육이 확산되며, 학생 개개인의 수준에 맞춘 감상·창작 경험을 제공하는 시도가 이어지고 있다.",
+        body:[
+          "달리 미술관이 도입한 AI 프로그램은 관람객, 특히 학생 단체 관람객에게 맞춤형 교육 경험을 제공한다. AI가 학습자 데이터를 분석해 개인별 이해도에 맞는 작품 설명과 감상 경로를 제시하는 방식이다.",
+          "다만 현장에서는 한계도 함께 지적된다. AI가 만든 이미지나 해설이 효율적인 도구로는 인정받지만, 작가 고유의 내면을 온전히 전달하는 데는 아직 미치지 못한다는 평가다. 교육 현장에서는 AI를 창작의 대체재가 아니라 이해를 돕는 보조 도구로 쓰는 방향이 자리 잡는 분위기다."
+        ],
+        byline:{ name:"백승효", mail:"seunghyo.baek@artinsight.co.kr" }
+      },
+    ]
+  },
+];
+
+function tagPills(tags){ return tags.map(t=>`<span class="tag-pill">${t}</span>`).join(""); }
+function ph(seed,w,h){ return `<img class="ph" src="https://picsum.photos/seed/${seed}/${w}/${h}" alt="">`; }
+
+/* 실시간(모드2) 기사는 API가 실제 이미지를 안 준다. 기사 제목마다 매번 새 picsum 랜덤 이미지를
+   생성해야 해서 캐시가 없어 2~4초씩 걸렸다("썸네일이 안 불러와지는" 원인). 그렇다고 사진을 아예
+   빼면 허전해 보이므로, 이미 앱에 들어있는 로컬 스톡 사진을 시드 기반으로 골라 재사용한다.
+   → 외부 네트워크 요청이 없어 항상 즉시 표시된다. */
+const STOCK_THUMBS = [
+  "asset/picture/Picture.png","asset/picture/Picture-1.png","asset/picture/Picture-2.png",
+  "asset/picture/Picture-3.png","asset/picture/Picture-4.png","asset/picture/Picture-5.png",
+  "asset/picture/Picture-6.png","asset/picture/Picture-7.png","asset/picture/Picture-8.png",
+  "asset/picture/Picture-9.png","asset/picture/Picture-10.png","asset/picture/Picture-11.png",
+  "asset/picture/스크린샷 2023-10-05 오후 3.32 2.png",
+  "asset/picture/스크린샷 2023-10-05 오후 3.32 2-1.png",
+  "asset/picture/스크린샷 2023-10-05 오후 3.32 2-2.png",
+  "asset/picture/스크린샷 2023-10-05 오후 3.32 2-3.png",
+  "asset/picture/스크린샷 2023-10-05 오후 3.32 2-4.png",
+];
+function stockThumbFor(seed){
+  const s = String(seed || "x");
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
+  return STOCK_THUMBS[h % STOCK_THUMBS.length];
+}
+function phImg(item,seed,w,h){
+  if (item.img) return `<img class="ph" src="${item.img}" alt="">`;
+  if (item.link) return `<img class="ph" src="${stockThumbFor(seed)}" alt="">`; // 실시간 기사: 로컬 스톡 사진
+  return ph(seed,w,h);
+}
+
+/* 실시간(모드2) 카드는 link, 모드1 큐레이션 카드는 body(작성된 본문)를 가진 경우에만 등록한다.
+   등록된 카드는 openArticle에서 그 기사만의 상세 화면을 띄우고, 등록 안 된 카드(둘 다 없음)만
+   기존 성수동 목업으로 폴백한다. */
+let _nid = 0;
+const NEWS_STORE = new Map();
+const ITEM_TO_NID = new Map(); // 연관 이슈 카드를 클릭했을 때 그 기사로 이동시키기 위한 역방향 조회
+function registerNews(item){
+  if (!item || (!item.link && !item.body && !item.richDetail)) return "";
+  const id = "n" + (++_nid);
+  NEWS_STORE.set(id, item);
+  ITEM_TO_NID.set(item, id);
+  return id;
+}
+
+/* "연관 이슈": 지금 보는 기사를 뺀 모드1 큐레이션 기사(body가 있는 것) 중,
+   같은 카테고리를 우선으로 최대 4개를 추천한다 — 기획서 8번의 "카테고리 정합성 → 전반적 인기" 폴백과 동일한 취지. */
+function pickRelated(item, count){
+  // 홈 화면에 이미 뜨는 26개(20개 기사 + 다른시각 변형 6개)를 "연관 이슈"에 또 보여주면
+  // 사용자가 "이미 본 거잖아" 라고 느끼므로, 연관 이슈 전용으로 따로 쓴 RELATED_POOL에서만 고른다.
+  const pool = RELATED_POOL.filter(v => v !== item);
+  const same = pool.filter(v => v.category === item.category);
+  const rest = pool.filter(v => v.category !== item.category);
+  return same.concat(rest).slice(0, count);
+}
+
+function renderHero(data){
+  data = data || HERO;
+  const el = document.getElementById("heroScroll");
+  el.innerHTML = data.map(h => `
+    <div class="hero-card" data-nid="${registerNews(h)}" onclick="openArticle(this)">
+      <div class="bg ${h.g}" style="position:absolute; inset:0;">${phImg(h,h.seed,588,756)}</div>
+      <div class="grad">
+        <div class="t headline">${h.t}</div>
+        <div class="hero-tags">${tagPills(h.tags || [h.tag])}<span class="time-txt">${h.time}</span></div>
+      </div>
+    </div>`).join("");
+
+  const pageEl = document.getElementById("heroPage");
+  pageEl.innerHTML = data.map((_,i) => `<div class="dot ${i===1?'on':''}"></div>`).join("");
+  const dots = [...pageEl.children];
+  const cards = [...el.children];
+
+  if (cards[1]) {
+    cards[1].scrollIntoView({ inline: "center", block: "nearest" });
+    cards[1].classList.add("active");
+  }
+
+  const io = new IntersectionObserver((entries) => {
+    let best = null;
+    entries.forEach(en => { if (en.isIntersecting && (!best || en.intersectionRatio > best.intersectionRatio)) best = en; });
+    if (best) {
+      const idx = cards.indexOf(best.target);
+      dots.forEach((d,i) => d.classList.toggle("on", i===idx));
+      cards.forEach((c,i) => c.classList.toggle("active", i===idx));
+    }
+  }, { root: el, threshold: [0.5, 0.6, 0.7, 0.8, 0.9] });
+  cards.forEach(c => io.observe(c));
+}
+
+function renderTodayPick(data){
+  data = data || TODAY_PICK;
+  document.getElementById("todayPick").innerHTML = data.map(c => `
+    <div class="news-card" data-nid="${registerNews(c)}" onclick="openArticle(this)">
+      <div class="thumb ${c.g}">${phImg(c,c.seed,700,360)}</div>
+      <div class="title">${c.t}</div>
+      <div class="meta"><span class="tag-pill">${c.tag}</span><span class="time-txt">${c.time}</span></div>
+    </div>`).join("");
+}
+
+function renderHotPick(data){
+  data = data || HOT_PICK;
+  document.getElementById("hotPick").innerHTML = data.map(c => `
+    <div class="news-card" data-nid="${registerNews(c)}" onclick="openArticle(this)">
+      <div class="thumb ${c.g}">${phImg(c,c.seed,504,360)}</div>
+      <div class="title">${c.t}</div>
+      <div class="meta"><span class="tag-pill">${c.tag}</span><span class="time-txt">${c.time}</span></div>
+    </div>`).join("");
+}
+
+function renderThemes(){
+  document.getElementById("themePick").innerHTML = THEMES.map(th => `
+    <div class="theme-col">
+      <div class="theme-head">
+        <div class="row"><h3 class="headline">${th.title}</h3><span class="chev">›</span></div>
+        <p>${th.sub}</p>
+      </div>
+      <div class="theme-kw">${th.kw.map(k=>`<span>${k}</span>`).join("")}</div>
+      <div class="theme-hero" data-nid="${registerNews(th.hero)}" onclick="openArticle(this)">
+        <div class="bg ${th.hero.g}" style="position:absolute; inset:0;">${phImg(th.hero,th.hero.seed,560,360)}</div>
+        <div class="grad">
+          <div class="meta"><span class="tag-pill">${th.hero.tag}</span><span class="time-txt">${th.hero.time}</span></div>
+          <div class="t">${th.hero.t}</div>
+        </div>
+      </div>
+      ${th.subs.map(s=>`
+        <div class="theme-sub" data-nid="${registerNews(s)}" onclick="openArticle(this)">
+          <div class="thumb ${s.g}">${phImg(s,s.seed,200,136)}</div>
+          <div class="txt">
+            <div class="t">${s.t}</div>
+            <div class="meta"><span class="tag-pill">${s.tag}</span><span class="time-txt">${s.time}</span></div>
+          </div>
+        </div>`).join("")}
+    </div>`).join("");
+}
+
+renderHero(); renderTodayPick(); renderHotPick(); renderThemes();
+
+/* ---------------- "다른 시각": 대표 이슈 3개만 긍정/우려/사실 3개 논조로 시연 ----------------
+   기획서 §6: 3가지 시각 모두 확보 시 긍정→사실→우려 순서로 3개 노출. 변형 기사엔 원본과
+   같은 이슈를 다른 프레이밍으로 쓴 본문 + kw 3개(#해시태그)를 둔다. 나머지 17개는 이슈당
+   기사가 1개뿐이라 §9 "빈 상태=섹션 생략" 원칙대로 이 섹션을 생략한다. */
+const TONE_ORDER = { "긍정":0, "사실":1, "우려":2 };
+function attachTones(hub, hubLabel, variants){
+  const all = [{ item:hub, label:hubLabel }, ...variants];
+  all.sort((a,b) => TONE_ORDER[a.label] - TONE_ORDER[b.label]);
+  hub.tones = all.map(({item, label}) => ({ label, item, nid: ITEM_TO_NID.get(item) || registerNews(item) }));
+}
+
+attachTones(HERO[1], "사실", [
+  { label:"긍정", item:{
+    t:"청년미래적금, 청년 자산형성 '마중물' 될까", g:"g-econ", seed:"savings-positive",
+    category:"경제", press:"이투데이", absTime:"2026.06.23 오전 10:20", kw:["자산형성","정책효과","목돈마련"],
+    desc:"정부 매칭 지원과 비과세 혜택을 앞세운 청년미래적금이, 사회초년생의 첫 목돈 마련을 돕는 실질적 마중물이 될 것이란 기대가 나온다.",
+    body:[
+      "전문가들은 청년미래적금이 사회초년생의 '첫 종잣돈' 마련에 실질적으로 도움이 될 것으로 본다. 매월 최대 50만원 납입에 정부가 6~12%를 추가로 얹어주고 이자소득세까지 면제되는 구조라, 같은 기간 일반 적금에 넣는 것보다 실질 수익률이 눈에 띄게 높다는 것이다.",
+      "특히 목돈이 없어 투자를 망설이던 청년층에게 안전한 방식으로 자산형성 습관을 들이는 계기가 될 수 있다는 평가다. 한 금융권 관계자는 \"단기적으로는 재정 부담이 있어도, 청년층의 저축 습관을 만들어준다는 점에서 장기적으로는 남는 정책\"이라고 말했다."
+    ],
+    byline:{ name:"한소민", mail:"somin.han@etoday.co.kr" }
+  }},
+  { label:"우려", item:{
+    t:"청년미래적금, 예산 부담 어디까지…형평성 논란도", g:"g-mix3", seed:"savings-concern",
+    category:"경제", press:"한겨레경제", absTime:"2026.06.24 오후 4:50", kw:["예산부담","형평성","포퓰리즘논란"],
+    desc:"신청자가 몰리며 정부가 추가 예산 편성까지 검토하자, 재정 부담과 가입 시기에 따른 형평성 문제를 지적하는 목소리도 나온다.",
+    body:[
+      "청년미래적금에 예상보다 훨씬 많은 신청이 몰리면서, 정부가 기준을 충족하는 신청자를 추가 예산을 편성해서라도 모두 받아주겠다고 밝히자 재정 부담을 우려하는 목소리가 나온다. 매칭 지원금 규모가 신청자 수에 비례해 커지는 구조라, 예상치를 크게 웃도는 흥행이 오히려 재정 계획에 부담으로 작용할 수 있다는 지적이다.",
+      "신청 기간을 놓친 청년들 사이에서는 형평성 논란도 제기된다. 2주라는 짧은 신청 기간 안에 정보를 못 접했거나 서류를 준비 못 한 경우 혜택에서 제외되는데, 향후 추가 모집 계획이 불투명해 '운 좋은 사람만 받는 정책'이라는 불만도 나오고 있다."
+    ],
+    byline:{ name:"오지훈", mail:"jihoon.oh@hani-eco.co.kr" }
+  }},
+]);
+
+attachTones(HERO[4], "우려", [
+  { label:"사실", item:{
+    t:"대기업 신입 공채 대신 수시채용 확산…채용시장 구조 재편", g:"g-mix2", seed:"hiring-fact",
+    category:"IT과학", press:"노동경제신문", absTime:"2026.07.09 오전 9:40", kw:["수시채용","직무경험","채용구조재편"],
+    desc:"대기업들이 정기 공채 대신 수시채용과 직무 경험 중심 평가로 채용 방식을 바꾸면서, 채용시장의 구조 자체가 재편되고 있다.",
+    body:[
+      "채용 방식이 정기 공채 중심에서 수시채용(54.8%)과 직무 경험 중심 평가(67.6%)로 빠르게 옮겨가고 있다. 필요한 자리가 생길 때마다 그 직무에 바로 투입할 수 있는 사람을 뽑는 방식이 자리 잡으면서, '몇 월에 대규모로 뽑는' 공채 시즌이라는 개념 자체가 옅어지고 있다.",
+      "이런 변화는 대기업뿐 아니라 채용 플랫폼 데이터에서도 확인된다. 맞춤형 취업 서비스 이용자 중 경력직 비중이 올해 들어 매달 오름세를 보이며, 신입과 경력의 채용 방식이 사실상 분리되는 흐름이 뚜렷해지고 있다."
+    ],
+    byline:{ name:"조민재", mail:"minjae.jo@laboreconomy.co.kr" }
+  }},
+  { label:"긍정", item:{
+    t:"AI 시대 채용, '경력보다 스킬'…역량 있으면 신입도 기회", g:"g-ai", seed:"hiring-positive",
+    category:"IT과학", press:"잡플래닛뉴스", absTime:"2026.07.12 오후 3:15", kw:["스킬기반채용","포트폴리오","신입기회"],
+    desc:"학벌·연차보다 실제 역량을 보는 스킬 기반 채용이 확산되면서, 경력은 없어도 실력을 증명한 신입에게 새로운 기회가 열리고 있다는 평가도 나온다.",
+    body:[
+      "채용 기준이 '몇 년 차인가'에서 '무엇을 할 수 있는가'로 옮겨가는 것을 기회로 보는 시각도 있다. 포트폴리오나 실무 과제로 역량을 증명할 수 있다면, 학벌이나 연차와 무관하게 채용될 가능성이 오히려 커졌다는 것이다.",
+      "실제로 특정 기술 스택이나 프로젝트 경험을 갖춘 일부 신입은 경력직 못지않은 조건으로 채용되는 사례도 나오고 있다. 전문가들은 \"채용 문 자체는 좁아졌지만, 그 문을 통과하는 기준이 명확해진 것은 준비된 인재에게 유리한 변화\"라고 평가한다."
+    ],
+    byline:{ name:"유해린", mail:"haerin.yoo@jobplanetnews.co.kr" }
+  }},
+]);
+
+attachTones(THEMES[2].hero, "사실", [
+  { label:"긍정", item:{
+    t:"AI 도슨트로 관람객 만족도 쑥…\"내 속도대로 감상 가능\"", g:"g-life", seed:"docent-positive",
+    category:"문화라이프", press:"아트인사이트", absTime:"2026.07.19 오전 11:30", kw:["관람객만족도","자율감상","맞춤해설"],
+    desc:"정해진 시간에 맞출 필요 없이 원하는 만큼 머물며 해설을 들을 수 있게 되면서, 관람객 만족도가 높아졌다는 반응이 나온다.",
+    body:[
+      "AI 도슨트를 이용한 관람객들 사이에서는 '내 속도대로 감상할 수 있어 좋다'는 반응이 많다. 정해진 시간에 단체로 움직여야 했던 기존 해설 방식과 달리, 원하는 작품 앞에서 원하는 만큼 머물며 궁금한 부분만 골라 들을 수 있기 때문이다.",
+      "특히 평일 낮처럼 해설사 배치가 어려운 시간대에도 언제든 해설을 이용할 수 있다는 점이 호응을 얻고 있다. 미술관 측은 향후 방문객 이용 데이터를 분석해 해설 콘텐츠를 계속 보완할 계획이라고 밝혔다."
+    ],
+    byline:{ name:"정유나", mail:"yuna.jeong@artinsight.co.kr" }
+  }},
+  { label:"우려", item:{
+    t:"AI 도슨트 확산에 인간 도슨트 설 자리 좁아지나", g:"g-mix1", seed:"docent-concern",
+    category:"문화라이프", press:"컬처타임스", absTime:"2026.07.21 오후 2:05", kw:["일자리축소","해설의깊이","대체우려"],
+    desc:"AI 해설 서비스가 늘면서, 사람 도슨트의 일자리와 해설의 깊이가 줄어들 수 있다는 우려도 함께 나온다.",
+    body:[
+      "AI 도슨트 도입이 늘면서 전문 도슨트들 사이에서는 일자리 축소를 우려하는 목소리가 나온다. 특히 예산이 넉넉지 않은 중소 미술관일수록 인건비 부담이 적은 AI 해설로 대체하려는 유인이 커질 수 있다는 것이다.",
+      "해설의 깊이가 얕아질 수 있다는 지적도 있다. 사람 도슨트는 관람객의 반응을 보며 즉흥적으로 설명을 조절하지만, AI는 정해진 데이터베이스 안에서 답하는 데 그쳐 예상치 못한 질문이나 깊이 있는 대화에는 한계가 있다는 것이다."
+    ],
+    byline:{ name:"배지안", mail:"jian.bae@culturetimes.co.kr" }
+  }},
+]);
+
+/* ---------------- "연관 이슈" 전용 풀 ----------------
+   홈 화면 26개(기사 20 + 다른시각 변형 6)와는 별개의, 연관 이슈에서만 등장하는 기사들.
+   홈에 카드로 뜨지 않고 registerNews로만 등록해 클릭 시 이동은 되게 한다. */
+const RELATED_POOL = [
+  { t:"고금리 예금 갈아타기 열풍, 저축은행 특판 완판 행렬", g:"g-econ", seed:"rel-savings-switch",
+    category:"경제", press:"파이낸셜투데이", absTime:"2026.07.02 오전 9:20",
+    desc:"시중은행보다 높은 금리를 주는 저축은행 특판 예금에 자금이 몰리며 '예금 갈아타기'가 새로운 재테크 습관으로 자리 잡고 있다.",
+    body:[
+      "시중은행 정기예금 금리가 낮아지자, 상대적으로 높은 금리를 제시하는 저축은행 특판 상품에 돈이 몰리고 있다. 온라인으로 손쉽게 가입할 수 있게 되면서 만기마다 더 높은 금리를 찾아 옮겨 다니는 '예금 갈아타기'가 흔한 재테크 방식이 됐다.",
+      "다만 예금자보호 한도(5000만원)를 넘겨 여러 상품에 분산 가입해야 하는 번거로움도 따른다. 전문가들은 금리만 보고 움직이기보다 해지 조건과 우대금리 요건을 꼼꼼히 따져야 한다고 조언한다."
+    ],
+    byline:{ name:"신유경", mail:"yugyeong.shin@financialtoday.co.kr" }
+  },
+  { t:"가계부채 관리 강화되며 신용대출 문턱 높아져", g:"g-mix2", seed:"rel-household-debt",
+    category:"경제", press:"경제일보", absTime:"2026.05.14 오후 2:00",
+    desc:"금융당국의 가계부채 관리 강화 기조에 은행들이 신용대출 한도를 줄이면서, 실수요자들의 자금 조달이 어려워지고 있다.",
+    body:[
+      "금융당국이 가계부채 증가세를 억제하기 위한 관리를 강화하면서, 시중은행들이 신용대출 한도를 잇따라 축소하고 있다. 소득 대비 대출 한도를 촘촘히 따지는 규제가 적용되며 문턱이 눈에 띄게 높아졌다는 평가다.",
+      "실수요자들 사이에서는 전세자금이나 목돈이 필요한 시점에 대출이 막혀 곤란을 겪는 사례가 나온다. 은행권은 총량 관리 목표를 지키면서도 실수요자 피해를 최소화할 방안을 검토 중이라고 밝혔다."
+    ],
+    byline:{ name:"임도현", mail:"dohyun.lim@economynews.co.kr" }
+  },
+  { t:"연금저축 세액공제 한도 확대…절세형 재테크 관심 급증", g:"g-mix1", seed:"rel-pension-tax",
+    category:"경제", press:"머니라이프", absTime:"2026.03.18 오전 11:00",
+    desc:"연금저축 세액공제 한도가 늘어나면서, 절세와 노후 준비를 함께 챙기려는 직장인들의 관심이 커지고 있다.",
+    body:[
+      "연금저축과 개인형퇴직연금(IRP)을 합친 세액공제 한도가 확대되면서 직장인들의 가입 문의가 늘고 있다. 소득 구간에 따라 다르지만, 한도를 꽉 채워 납입하면 연말정산 환급액이 눈에 띄게 늘어난다는 점이 매력으로 꼽힌다.",
+      "다만 중도 인출 시 세제 혜택을 도로 반납해야 해, 당장 쓸 자금까지 넣었다가 낭패를 보는 경우도 있다. 전문가들은 최소 은퇴 시점까지 묶어둘 수 있는 여윳돈으로 한도를 채우라고 권한다."
+    ],
+    byline:{ name:"윤채린", mail:"chaerin.yoon@moneylife.co.kr" }
+  },
+  { t:"생성형 AI 활용한 스타트업 투자 유치 잇따라", g:"g-ai", seed:"rel-genai-funding",
+    category:"IT과학", press:"테크비즈", absTime:"2026.04.09 오전 10:40",
+    desc:"생성형 AI를 자사 서비스에 접목한 국내 스타트업들이 잇따라 대규모 투자를 유치하며, 관련 투자 열기가 이어지고 있다.",
+    body:[
+      "생성형 AI를 검색, 커머스, 교육 등 기존 서비스에 접목한 스타트업들이 연이어 대규모 투자 유치에 성공하고 있다. 투자업계는 단순히 'AI를 쓴다'는 점보다, 실제 매출과 사용자 지표로 효과를 증명한 곳에 자금이 몰리는 추세라고 분석한다.",
+      "일각에서는 AI 스타트업에 자금이 쏠리며 거품 우려도 나온다. 투자자들은 기술력뿐 아니라 수익모델의 지속 가능성을 더 까다롭게 따지기 시작했다는 평가다."
+    ],
+    byline:{ name:"고은성", mail:"eunseong.ko@techbiz.co.kr" }
+  },
+  { t:"국내 반도체 기업들, 온디바이스 AI 칩 개발 경쟁 가속", g:"g-mix3", seed:"rel-ondevice-chip",
+    category:"IT과학", press:"전자산업신문", absTime:"2026.02.20 오후 3:30",
+    desc:"클라우드 없이 기기 자체에서 AI 연산을 처리하는 온디바이스 AI 칩을 두고 국내 반도체 기업들의 개발 경쟁이 뜨거워지고 있다.",
+    body:[
+      "스마트폰, 노트북 등 기기 자체에서 AI 연산을 처리하는 '온디바이스 AI' 칩 개발 경쟁이 가속화되고 있다. 클라우드 서버를 거치지 않아 응답 속도가 빠르고 개인정보가 외부로 나가지 않는다는 장점이 부각되면서다.",
+      "업계는 저전력·고성능을 동시에 만족시키는 설계가 관건이라고 본다. 국내 기업들은 해외 경쟁사보다 한발 앞서 상용화하기 위해 연구개발 투자를 확대하고 있다."
+    ],
+    byline:{ name:"박찬영", mail:"chanyoung.park@electronicsnews.co.kr" }
+  },
+  { t:"사이버보안 인력 부족 심화…기업들 AI 보안 솔루션 도입 확대", g:"g-econ", seed:"rel-cybersecurity",
+    category:"IT과학", press:"보안투데이", absTime:"2026.08.05 오전 9:00",
+    desc:"사이버보안 전문 인력이 부족해지자, 기업들이 사람 대신 AI 기반 보안 솔루션 도입을 늘리고 있다.",
+    body:[
+      "사이버 공격이 정교해지는 속도를 인력 채용이 따라가지 못하면서, 기업들이 AI 기반 위협 탐지·대응 솔루션 도입을 늘리고 있다. 이상 징후를 실시간으로 감지해 사람보다 빠르게 초기 대응을 할 수 있다는 점이 강점으로 꼽힌다.",
+      "다만 AI 보안 솔루션도 결국 사람이 설정하고 판단해야 하는 영역이 남아 있어, 완전한 인력 대체는 어렵다는 지적도 나온다. 업계는 AI와 전문 인력이 함께 일하는 구조로 재편될 것으로 내다본다."
+    ],
+    byline:{ name:"홍시우", mail:"siwoo.hong@securitytoday.co.kr" }
+  },
+  { t:"을지로 노포 골목, 힙지로 열풍 타고 2030 발길 이어져", g:"g-life", seed:"rel-eulji-hipjiro",
+    category:"문화라이프", press:"서울라이프", absTime:"2026.06.14 오후 6:20",
+    desc:"오래된 노포와 힙한 바가 공존하는 을지로 골목에 2030세대의 발길이 이어지며 '힙지로' 열풍이 계속되고 있다.",
+    body:[
+      "낡은 공구상가와 노포 사이사이에 감각적인 바와 카페가 들어서면서, 을지로는 여전히 2030세대가 즐겨 찾는 골목으로 꼽힌다. 옛것과 새것이 뒤섞인 낯선 풍경 자체가 SNS에서 콘텐츠가 되며 발길을 끌고 있다.",
+      "일부 노포 상인들은 젊은 손님이 늘어 반갑다면서도, 임대료 상승으로 오래된 가게들이 하나둘 떠나는 것에 대한 아쉬움도 함께 내비쳤다."
+    ],
+    byline:{ name:"장서우", mail:"seowoo.jang@seoullife.co.kr" }
+  },
+  { t:"한강 야경 명소로 뜨는 '루프탑 카페', 예약 전쟁 벌어져", g:"g-mix1", seed:"rel-rooftop-cafe",
+    category:"문화라이프", press:"라이프리포트", absTime:"2026.07.28 오후 7:10",
+    desc:"한강 야경을 볼 수 있는 루프탑 카페들이 인기를 끌면서, 주말 예약을 잡기 위한 경쟁이 치열해지고 있다.",
+    body:[
+      "한강이 내려다보이는 루프탑 카페들이 SNS를 타고 인기를 끌면서, 주말 저녁 시간대는 예약 오픈과 동시에 마감되는 경우가 흔해졌다. 야경을 배경으로 한 사진 한 장을 위해 웨이팅도 감수하는 손님이 늘었다.",
+      "업계는 이런 흐름에 맞춰 좌석을 시간대별로 나눠 파는 '타임 슬롯' 예약제를 속속 도입하고 있다. 다만 일부에서는 커피 한 잔 가격이 과도하게 비싸졌다는 불만도 나온다."
+    ],
+    byline:{ name:"오세인", mail:"sein.oh@lifereport.co.kr" }
+  },
+  { t:"전통시장 청년 상인들, SNS 마케팅으로 매출 반등", g:"g-mix2", seed:"rel-market-sns",
+    category:"문화라이프", press:"소상공인타임스", absTime:"2026.01.22 오전 10:50",
+    desc:"전통시장에 새로 자리 잡은 청년 상인들이 SNS 마케팅을 적극 활용하며 매출 반등에 성공하는 사례가 늘고 있다.",
+    body:[
+      "전통시장 안에 가게를 낸 청년 상인들이 짧은 영상과 SNS 홍보로 새로운 손님층을 끌어들이고 있다. 부모 세대의 방식과 다른 접근으로, 시장을 잘 찾지 않던 2030세대까지 발걸음을 옮기게 만들었다는 평가다.",
+      "지자체들도 이런 흐름에 맞춰 청년 상인 대상 SNS 마케팅 교육과 촬영 장비 지원 사업을 확대하고 있다. 상인회 관계자는 \"시장 전체 활력에도 긍정적인 영향을 주고 있다\"고 전했다."
+    ],
+    byline:{ name:"문지호", mail:"jiho.moon@sohotimes.co.kr" }
+  },
+];
+RELATED_POOL.forEach(v => registerNews(v));
+
+/* 화면에 처음 그려진(디자인 목업) 상세 HTML을 보존해뒀다가,
+   모드1(하드코딩) 카드를 열 때나 실시간 카드에서 되돌아올 때 그대로 복원한다. */
+const ARTICLE_STATIC_HTML = document.getElementById("screen-article").innerHTML;
+
+/* 발췌문이 없을 때 제목을 "1분 요약"처럼 다듬는다. 실제 의미 요약(AI)은 아니고
+   [속보]/[단독] 같은 태그, 끝의 "..." 만 정리하는 수준의 눈속임용 정리다. */
+function titleAsSummary(t){
+  return String(t || "")
+    .replace(/^[\[【][^\]】]{1,10}[\]】]\s*/, "")
+    .replace(/\s*[.…]{2,}\s*$/, "")
+    .trim();
+}
+
+function openArticle(el){
+  const id = el && el.dataset ? el.dataset.nid : "";
+  const item = id ? NEWS_STORE.get(id) : null;
+  const art = document.getElementById("screen-article");
+  if (item && item.richDetail) {
+    // "다른 시각"·"연관 이슈"까지 완비된 단 하나의 기사(성수동 팝업) — 원래 마크업 그대로 사용
+    art.innerHTML = ARTICLE_STATIC_HTML;
+  } else if (item) {
+    populateArticle(art, item);
+  } else {
+    art.innerHTML = ARTICLE_STATIC_HTML; // 이론상 도달 안 함(모든 카드가 등록됨) — 안전망
+  }
+  document.getElementById("screen-home").style.display="none";
+  art.style.display="block";
+  // 실제 스크롤 컨테이너는 window가 아니라 #app(overflow-y:auto)이라 window.scrollTo만으론 리셋이 안 됨
+  // → 연관 이슈에서 다른 기사로 넘어갈 때 이전 스크롤 위치 그대로(화면 중간/하단부터) 뜨는 버그였음.
+  document.getElementById("app").scrollTop = 0;
+  window.scrollTo(0,0);
+}
+
+/* 실시간 기사로 상세 화면을 채운다.
+   RSS/네이버 API는 기사 본문 전체를 주지 않으므로(제목/발췌문/원문링크만),
+   본문 자리엔 발췌문 + '원문 전체 보기' 링크를 넣고, AI 큐레이션(가짜 데이터) 섹션은 숨긴다. */
+function populateArticle(art, item){
+  art.innerHTML = ARTICLE_STATIC_HTML;
+  const q = sel => art.querySelector(sel);
+  const mkSpan = (cls, txt) => { const s = document.createElement("span"); s.className = cls; s.textContent = txt; return s; };
+
+  q(".art-title-block h1").textContent = item.t || "";
+
+  // 모드1(큐레이션) 카드는 category(예: 문화라이프)+press(언론사)+absTime(절대시간)을 갖고,
+  // 모드2(실시간) 카드는 source(기사 원문 도메인)+time(상대시간)만 갖는다 — 있는 것만 채운다.
+  const metaRow = q(".art-meta-row");
+  metaRow.textContent = "";
+  // 히어로 카드류는 tags(배열, 카드엔 2개 노출)를 쓴다 — 상세에선 원본 마크업(성수동)과 동일하게 1순위 태그만.
+  metaRow.appendChild(mkSpan("pill-dark", item.tag || (item.tags && item.tags[0]) || "실시간"));
+  if (item.category || item.source) metaRow.appendChild(mkSpan("pill-outline", item.category || item.source));
+  if (item.press) {
+    metaRow.appendChild(mkSpan("sep", "ㅣ"));
+    metaRow.appendChild(mkSpan("meta-sub", item.press));
+  }
+  metaRow.appendChild(mkSpan("sep", "ㅣ"));
+  metaRow.appendChild(mkSpan("meta-sub", item.absTime || item.time || ""));
+
+  const heroImg = q(".art-hero .bg img");
+  if (heroImg) heroImg.src = item.img || stockThumbFor(item.seed);
+
+  const hasDesc = !!(item.desc && item.desc.length > 10);
+  // expand-arrow는 그대로 둔다(제거하면 상세 진입 직후 본문 한 줄이 화면에 같이 보여버림 —
+  // 성수동 기사처럼 처음엔 1분 요약까지만 보이고 본문은 스크롤해야 나오는 게 의도된 디자인).
+  // 발췌문(desc)이 없는 소스(구글 폴백)는 제목을 그대로 복붙하지 않고,
+  // [속보]/[종합] 같은 태그와 끝의 "..."만 정리해 1줄 요약처럼 보이게 한다(실제 AI 요약은 아님).
+  q(".summary-box p").textContent = hasDesc ? item.desc : titleAsSummary(item.t);
+
+  const body = q(".art-body");
+  body.textContent = "";
+  body.style.paddingTop = "40px"; // margin이 아니라 padding으로 덮어써야 뒤의 sticky 히어로가 안 비침
+  if (Array.isArray(item.body) && item.body.length) {
+    // 모드1 큐레이션 기사: 직접 작성한 본문 여러 문단 + 바이라인
+    item.body.forEach(para => {
+      const p = document.createElement("p");
+      p.textContent = para;
+      body.appendChild(p);
+    });
+    if (item.byline) {
+      const bl = document.createElement("div");
+      bl.className = "art-byline";
+      const nm = document.createElement("div"); nm.className = "name"; nm.textContent = item.byline.name + " 기자";
+      const ml = document.createElement("div"); ml.className = "mail"; ml.textContent = item.byline.mail;
+      bl.appendChild(nm); bl.appendChild(ml);
+      body.appendChild(bl);
+    }
+  } else if (hasDesc) {
+    const p = document.createElement("p");
+    p.textContent = item.desc;
+    body.appendChild(p);
+  }
+  if (item.link) {
+    const a = document.createElement("a");
+    a.className = "art-origin-link";
+    a.href = item.link; a.target = "_blank"; a.rel = "noopener noreferrer";
+    a.textContent = "원문 전체 보기 →";
+    body.appendChild(a);
+
+    const note = document.createElement("p");
+    note.className = "art-limit-note";
+    // .art-actions는 position:sticky;bottom:0 라서 화면 맨 처음(스크롤 0)에도 뷰포트 하단
+    // ~81px를 항상 덮는다(프로스티드 글래스 툴바 의도). 짧아진 콘텐츠에서 이 문구가 딱 그 자리에
+    // 걸리면 텍스트가 아이콘 밑에 끼어 보이므로, 여유 마진을 줘서 초기 화면 아래로 밀어낸다.
+    note.style.marginTop = "130px";
+    note.textContent = "뉴스 본문은 언론사 저작권 콘텐츠라 API도 제목·요약·링크까지만 제공합니다. 실제 서비스라면 언론사와 콘텐츠 사용 계약을 맺거나 한국언론진흥재단 라이선스로 전재 권한을 확보해야 합니다.";
+    body.appendChild(note);
+  }
+
+  // "다른 시각"(같은 이슈의 논조 3분류)은 이슈당 변형 기사가 여러 개 있어야 보여줄 수 있다.
+  // item.tones가 있는 대표 이슈 3개만 실제로 채우고, 나머지는 기획서 9번 "빈 상태=섹션 생략" 그대로 숨긴다.
+  const tonesSection = q("#sec-tones");
+  const hasTones = Array.isArray(item.tones) && item.tones.length >= 2;
+  if (tonesSection) {
+    if (hasTones) {
+      const list = q("#tonesList");
+      list.innerHTML = "";
+      const TONE_ICON = { "긍정":"asset/State 1=긍정, Type 1=제목.svg", "우려":"asset/State 1=우려, Type 1=제목.svg", "사실":"asset/State 1=사실, Type 1=제목.svg" };
+      const TONE_COLOR = { "긍정":"sky", "우려":"pink", "사실":"yellow" };
+      item.tones.forEach(tone => {
+        const it = tone.item;
+        const row = document.createElement("div");
+        row.className = "issue-row";
+        row.dataset.nid = tone.nid;
+        row.onclick = () => openArticle(row);
+        const toneRow = document.createElement("div");
+        toneRow.className = "tone-row";
+        const icon = document.createElement("img");
+        icon.className = "tone-chip"; icon.src = TONE_ICON[tone.label]; icon.alt = tone.label + "시각";
+        toneRow.appendChild(icon);
+        (it.kw || []).forEach(k => toneRow.appendChild(mkSpan("kw-chip " + TONE_COLOR[tone.label], "#" + k)));
+        const content = document.createElement("div"); content.className = "issue-content";
+        const text = document.createElement("div"); text.className = "issue-text";
+        const t = document.createElement("div"); t.className = "t"; t.textContent = it.t;
+        const time = document.createElement("span"); time.className = "meta-sub"; time.textContent = it.absTime || it.time || "";
+        text.appendChild(t); text.appendChild(time);
+        const thumb = document.createElement("div"); thumb.className = "issue-thumb " + (it.g || "g-mix1");
+        thumb.innerHTML = phImg(it, it.seed, 136, 136);
+        content.appendChild(text); content.appendChild(thumb);
+        row.appendChild(toneRow); row.appendChild(content);
+        list.appendChild(row);
+      });
+      tonesSection.style.display = "";
+    } else {
+      tonesSection.style.display = "none";
+    }
+  }
+  // 다른 시각 섹션을 숨기면 그 앞뒤 40px 여백 div 2개가 나란히 붙어 회색 띠가 두 배로 넓어 보이므로 하나만 남긴다.
+  const tonesRelatedSpacer = q("#spacer-tones-related");
+  if (tonesRelatedSpacer) tonesRelatedSpacer.style.display = hasTones ? "" : "none";
+
+  // "연관 이슈"는 기획서 8번이 항상 채워지도록 폴백까지 정해둔 기능이라,
+  // 큐레이션 기사(body 있음)라면 나머지 19개 중에서 실제로 골라 채운다.
+  const relatedSection = q("#sec-related");
+  if (relatedSection) {
+    const candidates = item.body ? pickRelated(item, 4) : [];
+    if (candidates.length) {
+      const list = q("#relatedList");
+      list.innerHTML = "";
+      candidates.forEach(rel => {
+        const row = document.createElement("div");
+        row.className = "related-row";
+        row.dataset.nid = ITEM_TO_NID.get(rel) || "";
+        row.onclick = () => openArticle(row);
+        const thumb = document.createElement("div");
+        thumb.className = "related-thumb " + (rel.g || "g-mix1");
+        thumb.innerHTML = phImg(rel, rel.seed, 232, 152);
+        const text = document.createElement("div");
+        text.className = "related-text";
+        const t = document.createElement("div"); t.className = "t"; t.textContent = rel.t;
+        const meta = document.createElement("div"); meta.className = "related-meta";
+        meta.appendChild(mkSpan("pill-outline", rel.category || rel.tag || ""));
+        meta.appendChild(mkSpan("meta-sub", rel.absTime || rel.time || ""));
+        text.appendChild(t); text.appendChild(meta);
+        row.appendChild(thumb); row.appendChild(text);
+        list.appendChild(row);
+      });
+      relatedSection.style.display = "";
+    } else {
+      relatedSection.style.display = "none";
+    }
+  }
+}
+function goHome(){
+  document.getElementById("screen-article").style.display="none";
+  document.getElementById("screen-home").style.display="block";
+  document.getElementById("app").scrollTop = 0;
+  window.scrollTo(0,0);
+}
+function restartArticle(){ document.getElementById("app").scrollTop = 0; window.scrollTo(0,0); }
+
+/* ---------------- Mode 2: 실시간 (서버리스 /api/news 경유) ---------------- */
+/* 뉴스 fetch는 브라우저가 아니라 Vercel 서버리스 함수(api/news.js)가 수행한다.
+   → CORS 프록시 불필요, 네이버 검색 API(1순위) + 구글 뉴스 RSS(폴백) 처리는 서버에서. */
+const INTEREST_CATEGORIES = ["정치","경제","사회","IT과학","문화라이프","세계","스포츠","방송연예","오피니언"];
+
+let appMode = 1;
+let selectedInterests = [];
+
+function renderObChips(){
+  const el = document.getElementById("obChips");
+  el.innerHTML = INTEREST_CATEGORIES.map(c => `<div class="ob-chip" data-c="${c}" onclick="toggleInterest('${c}')">${c}</div>`).join("");
+}
+
+function toggleInterest(c){
+  const i = selectedInterests.indexOf(c);
+  if (i === -1) selectedInterests.push(c); else selectedInterests.splice(i,1);
+  document.querySelectorAll(".ob-chip").forEach(chip => chip.classList.toggle("on", selectedInterests.includes(chip.dataset.c)));
+  const btn = document.getElementById("obStart");
+  const ready = selectedInterests.length > 0;
+  btn.disabled = !ready;
+  btn.classList.toggle("ready", ready);
+}
+
+async function fetchCategoryNews(keyword){
+  const res = await fetch(`/api/news?q=${encodeURIComponent(keyword)}`);
+  if (!res.ok) throw new Error("fetch failed: " + keyword);
+  const data = await res.json();
+  return Array.isArray(data.items) ? data.items : [];
+}
+
+function shuffle(arr){
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function setLiveBadge(on){
+  const existing = document.getElementById("liveBadge");
+  if (on) {
+    if (!existing) {
+      const badge = document.createElement("span");
+      badge.id = "liveBadge";
+      badge.className = "live-badge";
+      badge.textContent = "실시간";
+      document.querySelector(".logo-mark").appendChild(badge);
+    }
+  } else if (existing) {
+    existing.remove();
+  }
+}
+
+function setThemeSectionVisible(visible){
+  const themePick = document.getElementById("themePick");
+  const chapter = themePick.closest(".chapter");
+  if (chapter) chapter.style.display = visible ? "" : "none";
+}
+
+async function startRealtime(){
+  if (selectedInterests.length === 0) return;
+  document.getElementById("screen-onboarding").style.display = "none";
+  document.getElementById("screen-home").style.display = "block";
+  document.querySelector(".app").scrollTop = 0;
+  setLiveBadge(true);
+  setThemeSectionVisible(false);
+  document.getElementById("heroScroll").innerHTML = '<div class="live-loading">실시간 뉴스를 불러오는 중...</div>';
+  document.getElementById("todayPick").innerHTML = "";
+  document.getElementById("hotPick").innerHTML = "";
+  try {
+    const results = await Promise.all(selectedInterests.map(c => fetchCategoryNews(c).catch(() => [])));
+    let all = shuffle(results.flat());
+    if (all.length === 0) throw new Error("no results");
+    renderHero(all.slice(0, Math.min(5, all.length)));
+    renderTodayPick(all.slice(5, 8).length ? all.slice(5, 8) : all.slice(0, 3));
+    renderHotPick(all.slice(8, 11).length ? all.slice(8, 11) : all.slice(0, 3));
+  } catch (e) {
+    document.getElementById("heroScroll").innerHTML = '<div class="live-loading">뉴스를 불러오지 못했어요.<br>네트워크 상태를 확인하거나 잠시 후 다시 시도해주세요.</div>';
+  }
+}
+
+function toggleMode(){
+  document.getElementById("screen-article").style.display = "none";
+  if (appMode === 1) {
+    appMode = 2;
+    document.getElementById("fabLabel").textContent = "2";
+    document.getElementById("fab").classList.add("live");
+    if (selectedInterests.length > 0) {
+      startRealtime();
+    } else {
+      document.getElementById("screen-home").style.display = "none";
+      document.getElementById("screen-onboarding").style.display = "block";
+    }
+  } else {
+    appMode = 1;
+    document.getElementById("fabLabel").textContent = "1";
+    document.getElementById("fab").classList.remove("live");
+    document.getElementById("screen-onboarding").style.display = "none";
+    setLiveBadge(false);
+    setThemeSectionVisible(true);
+    renderHero(); renderTodayPick(); renderHotPick();
+    document.getElementById("screen-home").style.display = "block";
+    document.querySelector(".app").scrollTop = 0;
+  }
+}
+
+renderObChips();
+</script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+{
+  "name": "pickter",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "description": "PICKTER - 관심사 기반 뉴스 큐레이션 앱 (포트폴리오)",
+  "scripts": {
+    "dev": "vercel dev",
+    "dev:local": "node scripts/dev-server.mjs",
+    "deploy": "vercel --prod"
+  },
+  "devDependencies": {
+    "vercel": "^37.0.0"
+  }
+}
