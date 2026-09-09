@@ -9,3 +9,4 @@ node_modules/
 # 포트폴리오 발표자료(대용량) - 저장소에는 두되 배포에서는 제외(.vercelignore)
 # 커밋을 원치 않으면 아래 주석 해제
 # 픽터.pdf
+.vercel

@@ -10,6 +10,6 @@
     "deploy": "vercel --prod"
   },
   "devDependencies": {
-    "vercel": "^37.0.0"
+    "vercel": "^59.13.1"
   }
 }
